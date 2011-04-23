@@ -69,6 +69,19 @@ class InjectStack
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Adds a middleware at the start of the stack.
+	 * 
+	 * @param  MiddlewareInterface
+	 * @return void
+	 */
+	public function prependMiddleware(MiddlewareInterface $middleware)
+	{
+		array_unshift($this->middleware, $middleware);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
 	 * Adds a middleware at the end of the stack.
 	 * 
 	 * @param  MiddlewareInterface

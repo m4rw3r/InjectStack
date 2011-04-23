@@ -51,8 +51,8 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 		
 		$r = $m->run('TESTING!');
 		
-		$this->assertEquals($run, 'TESTING!');
-		$this->assertEquals($r, 'RETURN');
+		$this->assertEquals('TESTING!', $run);
+		$this->assertEquals('RETURN', $r);
 	}
 	
 	public function testAddMiddleware()
@@ -77,7 +77,7 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 		
 		$r = $m->run('TESTDATA');
 		
-		$this->assertEquals($r, 'TESTDATAHANDLED');
+		$this->assertEquals('TESTDATAHANDLED', $r);
 	}
 	
 	public function testAddMultipleMiddleware()
@@ -112,7 +112,42 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 		
 		$r = $m->run('TESTDATA');
 		
-		$this->assertEquals($r, '21TESTDATAHANDLED21');
+		$this->assertEquals('21TESTDATAHANDLED21', $r);
+	}
+	
+	public function testPrependMiddleware()
+	{
+		$endpoint = function($env)
+		{
+			return $env.'HANDLED';
+		};
+		
+		
+		$middleware = $this->getMock('InjectStack\\MiddlewareInterface');
+		
+		$middleware->expects($this->once())->method('setNext')->with($endpoint);
+		$middleware->expects($this->once())->method('__invoke')->with('2TESTDATA')->will($this->returnCallback(function($env) use($endpoint)
+		{
+			return $endpoint('1'.$env).'1';
+		}));
+		
+		$middleware2 = $this->getMock('InjectStack\\MiddlewareInterface');
+		
+		$middleware2->expects($this->once())->method('setNext')->with($middleware);
+		$middleware2->expects($this->once())->method('__invoke')->with('TESTDATA')->will($this->returnCallback(function($env) use($middleware)
+		{
+			return $middleware('2'.$env).'2';
+		}));
+		
+		$m = new InjectStack();
+		
+		$m->addMiddleware($middleware);
+		$m->prependMiddleware($middleware2);
+		$m->setEndpoint($endpoint);
+		
+		$r = $m->run('TESTDATA');
+		
+		$this->assertEquals('12TESTDATAHANDLED12', $r);
 	}
 	
 	public function testAddMiddlewareAlternateSyntax()
@@ -134,7 +169,7 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 		
 		$r = $m->run('TESTDATA');
 		
-		$this->assertEquals($r, 'TESTDATAHANDLED');
+		$this->assertEquals('TESTDATAHANDLED', $r);
 	}
 }
 
