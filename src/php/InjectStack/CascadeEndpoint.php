@@ -9,7 +9,7 @@ namespace InjectStack;
 
 /**
  * Endpoint which attempts to call several apps and returns the response of the
- * first one to return a response without the X-Cascade header set to pass.
+ * first one to return a response which does not have a 404 status code.
  */
 class CascadeEndpoint
 {
@@ -47,13 +47,14 @@ class CascadeEndpoint
 	
 	public function __invoke($env)
 	{
-		$ret = array(404, array('X-Cascade' => 'pass'), '');
+		$ret = array(404, array(), '');
 		
 		foreach($this->apps as $app)
 		{
 			$ret = call_user_func($app, $env);
 			
-			if( ! isset($ret[1]['X-Cascade']) OR $ret[1]['X-Cascade'] != 'pass')
+			// Check 404 status
+			if($ret[0] != 404)
 			{
 				return $ret;
 			}
