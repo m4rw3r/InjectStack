@@ -8,7 +8,7 @@ This protocol is almost a straight port of Ruby's Rack_ `Specifications
 Introduction
 ============
 
-The basic principle of the framework is a chain of layers — so called 
+The basic principle of the framework is a stack of layers — so called 
 middleware — which perform specific actions and then passes the request
 on to the next layer, ultimately reaching a controller's action method.
 The action method might pass this on to another stack which leads to another
@@ -18,10 +18,16 @@ When an action is done executing, its response will be returned through all
 the middleware, enabling them to finish processing of the request and
 finally let the browser see the result.
 
-In more general terms, the execution is done using the ``MiddlewareStack`` 
-which contains a series of middlewares which will process the request
-before and after it is handed to the endpoint callback (which is either a
-closure or an object with ``__invoke()``).
+In more general terms, the application interface only requires one condition:
+object implementing the method ``__invoke($env)`` which incidentally also
+includes PHP Closures. ``$env`` and the return value of the application
+should have a specific format, see `The Environment Variable`_ and
+`The Return Value`_.
+
+To make the creation of the stack easier, the class ``\InjectStack\Builder`` 
+and the interface ``\InjectStack\MiddlewareInterface`` has been introduced.
+``\InjectStack\Builder`` constructs a stack from supplied concrete instances
+of the ``\InjectStack\MiddlewareInterface`` and a final endpoint.
 
 What is an endpoint?
 --------------------
