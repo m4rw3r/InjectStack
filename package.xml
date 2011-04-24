@@ -49,6 +49,12 @@ ${contents}
         <max>2.999.9999</max>
       </package>
     </required>
+    <optional>
+      <package>
+        <name>Inject_ClassTools</name>
+        <channel>injectframework.github.com/pear</channel>
+      </package>
+    </optional>
   </dependencies>
   <phprelease />
   <changelog>
