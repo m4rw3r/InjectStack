@@ -5,8 +5,6 @@ InjectStack Specifications
 This protocol is almost a straight port of Ruby's Rack_ `Specifications
 <http://rack.rubyforge.org/doc/files/SPEC.html>`_.
 
-.. _Rack: http://rack.rubyforge.org/
-
 Introduction
 ============
 
@@ -24,6 +22,36 @@ In more general terms, the execution is done using the ``MiddlewareStack``
 which contains a series of middlewares which will process the request
 before and after it is handed to the endpoint callback (which is either a
 closure or an object with ``__invoke()``).
+
+What is an endpoint?
+--------------------
+
+An endpoint is a PHP object implementing ``__invoke($env)`` method (which
+also includes PHP closures taking a single parameter). Usually the main
+endpoint of your application will be a Router which in turn will call the
+controller, or a controller specific ``MiddlewareStack`` or something else.
+
+Simple endpoint::
+
+  class MyEndpoint
+  {
+      public function __invoke($env)
+      {
+          return array(200, array('Content-Type' => 'text/plain'), 'Hello World!');
+      }
+  }
+  
+  // Or even:
+  $hello_endpoint = function($env)
+  {
+      return array(200, array('Content-Type' => 'text/plain'), 'Hello World!');
+  };
+
+For a more complicated endpoint, see the ``\InjectStack\CascadeEndpoint``.
+This endpoint attempts several callbacks until one does not return a
+response with the status code (first array index in the response) set to
+``404``. So the associated callbacks will return a response along the lines
+of ``array(404, array(), '')`` if they do not process the request.
 
 What is middleware?
 -------------------
@@ -75,30 +103,6 @@ For a simple middleware which does something more useful, look at
 ``\InjectStack\Middleware\RunTimer`` which times the execution of all the 
 following middleware and endpoint(s) and code called by those.
 
-What is an endpoint?
---------------------
-
-An endpoint is a PHP object implementing ``__invoke($env)`` method (which
-also includes PHP closures taking a single parameter). Usually the main
-endpoint of your application will be a Router which in turn will call the
-controller, or a controller specific ``MiddlewareStack`` or something else.
-
-Simple endpoint::
-
-  class MyEndpoint
-  {
-      public function __invoke($env)
-      {
-          return array(200, array('Content-Type' => 'text/plain'), 'Hello World!');
-      }
-  }
-
-For a more complicated endpoint, see the ``\InjectStack\CascadeEndpoint``.
-This endpoint attempts several callbacks until one does not return a
-response with the header ``X-Cascade`` set to ``pass``. So the associated
-callbacks will return a response along the lines of ``array(404,
-array('X-Cascade' => 'pass'), '')`` if they do not process the request.
-
 The Environment Variable
 ========================
 
@@ -118,10 +122,6 @@ specific header or change something like the ``REQUEST_TYPE``. This
 can be very useful when for example performing internal HMVC [#]_ requests.
 
 The environment must however conform to a few basic rules:
-
-.. [#] Hierarchical Model-View-Controller, see `Wikipedia about HMVC`_
-
-.. _`Wikipedia about HMVC`: http://en.wikipedia.org/wiki/Presentation-abstraction-control
 
 Required keys
 -------------
@@ -174,13 +174,13 @@ The Environment variable must always include these keys:
     of these variables should correspond with the presence or absence of
     the appropriate HTTP header in the request.
 
-Framework supplied keys
------------------------
+Adapter supplied keys
+---------------------
 
-The framework's ``ServerAdapter`` s will include these keys:
+InjectStack's ``ServerAdapter`` s will include these keys:
 
 ``inject.version``:
-    The current version of InjectFramework.
+    The current version of InjectStack.
 
 ``inject.url_scheme``:
     ``https`` or ``http``, depending on the request URL.
@@ -194,6 +194,12 @@ The framework's ``ServerAdapter`` s will include these keys:
 
 ``inject.post``:
     Contains the POST data, ie. parsed ``inject.input``.
+
+``inject.cookies``:
+    Contains the Cookies parsed by PHP (same as ``$_COOKIE``).
+
+``inject.files``:
+    Contains a list of files uploaded with the request (same as ``$_FILES``).
 
 ``inject.input``:
     Contains the request body.
@@ -261,7 +267,7 @@ The header ``status`` is not allowed.
 
 All header values must either be strings or objects responding to
 ``__toString()``, and they must not contain ASCII character values
-below 028 (excepting newline ``== 012 == \n``).
+below ``028`` (excepting newline ``== 012 == \n``).
 
 If the response code is ``1xx``, ``204`` or ``304`` the ``Content-Type``
 header cannot exist. Otherwise it must be present.
@@ -286,10 +292,17 @@ validate the ``$env`` var when it is received, and after the next
 middleware/endpoint has processed the request, it will validate the response.
 
 It is recommended to add one instance before your middleware and one after
-to validate that the $env variable is passed on correctly.
+to validate that the ``$env`` variable is passed on correctly. If you want
+to validate an endpoint, just add the lint middleware as the last middleware
+before your endpoint.
 
 If any of the assertions fail, a ``LintException`` will be thrown, detailing
 the problem
 
-*Note*: Do not use this in production however, as all the checks will slow 
+*Note*: Do not use this in production, however, as all the checks will slow 
 down the request processing.
+
+
+.. _Rack: http://rack.rubyforge.org/
+.. [#] Hierarchical Model-View-Controller, see `Wikipedia about HMVC`_
+.. _`Wikipedia about HMVC`: http://en.wikipedia.org/wiki/Presentation-abstraction-control

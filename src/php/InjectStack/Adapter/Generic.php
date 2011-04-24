@@ -32,6 +32,9 @@ class Generic implements AdapterInterface
 		$env['inject.url_scheme'] = (( ! empty($env['HTTPS'])) && $env['HTTPS'] != 'off') ? 'https' : 'http';
 		$env['inject.input']      = file_get_contents('php://input');
 		
+		$env['inject.cookies']    = $_COOKIE;
+		$env['inject.files']      = $_FILES;
+		
 		// SCRIPT_NAME + PATH_INFO = URI - QUERY_STRING
 		$env['SCRIPT_NAME'] == '/'  && $env['SCRIPT_NAME']  = '';
 		isset($env['QUERY_STRING']) OR $env['QUERY_STRING'] = '';
@@ -76,7 +79,6 @@ class Generic implements AdapterInterface
 			$headers['Content-Type'] = 'text/html';
 		}
 		
-		// TODO: Enable length-less responses
 		$headers['Content-Length'] = strlen($content);
 		
 		foreach($headers as $k => $v)

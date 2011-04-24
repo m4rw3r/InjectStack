@@ -85,7 +85,7 @@ class Lint implements MiddlewareInterface
 	 */
 	public function checkEnv(&$env)
 	{
-		$this->assert(sprintf('$env is not an array, but %s',
+		$this->assert(sprintf('$env is not array equivalent (iterable, ArrayAccess, Countable), but %s',
 			gettype($env) == 'object' ? get_class($env) : gettype($env)),
 			$this->isArrayEquivalent($env));
 		
@@ -104,7 +104,10 @@ class Lint implements MiddlewareInterface
 				'inject.url_scheme',
 				'inject.adapter',
 				'inject.get',
-				'inject.post'
+				'inject.post',
+				'inject.cookies',
+				'inject.files',
+				'inject.input'
 		);
 		
 		foreach($string_keys as $str_key)
@@ -136,8 +139,10 @@ class Lint implements MiddlewareInterface
 		$this->assert('inject.adapter must be present and string',
 			isset($env['inject.adapter']) && gettype($env['inject.adapter']) == 'string');
 		
-		$this->assert('inject.get must be an array',  $this->isArrayEquivalent($env['inject.get']));
-		$this->assert('inject.post must be an array', $this->isArrayEquivalent($env['inject.post']));
+		$this->assert('inject.get must be an array',     $this->isArrayEquivalent($env['inject.get']));
+		$this->assert('inject.post must be an array',    $this->isArrayEquivalent($env['inject.post']));
+		$this->assert('inject.cookies must be an array', $this->isArrayEquivalent($env['inject.cookies']));
+		$this->assert('inject.files must be an array',   $this->isArrayEquivalent($env['inject.files']));
 		
 		$this->assert(sprintf('Unknown REQUEST_METHOD %s', $env['REQUEST_METHOD']),
 			preg_match('/^[0-9A-Za-z!\#$%&\'*+.^_`|~-]+$/', $env['REQUEST_METHOD']));
