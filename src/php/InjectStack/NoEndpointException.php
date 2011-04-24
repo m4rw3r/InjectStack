@@ -8,14 +8,14 @@
 namespace InjectStack;
 
 /**
- * Exception telling the user that an endpoint is missing on a InjectStack.
+ * Exception telling the user that an endpoint is missing on a Builder.
  */
 class NoEndpointException extends \RuntimeException
 {
 	function __construct()
 	{
 		// TODO: Error code:
-		parent::__construct('Missing endpoint in InjectStack.');
+		parent::__construct('Missing endpoint in Builder.');
 	}
 }
 

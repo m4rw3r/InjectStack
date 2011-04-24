@@ -8,7 +8,7 @@
 namespace InjectStack;
 
 /**
- * A stack which creates a chain for dealing with requests, middleware can modify the
+ * An object which creates a stack of middleware for dealing with requests, middleware can modify the
  * request or response, return a response or do other actions before the request reaches the endpoint.
  * 
  * A middleware is a component which performs actions before or after the request
@@ -16,7 +16,7 @@ namespace InjectStack;
  * return a response directly instead of calling the next component, this can
  * for example be used by a validation component.
  */
-class InjectStack
+class Builder
 {
 	/**
 	 * Version constant for InjectStack, compatible with version_compare().
@@ -42,7 +42,7 @@ class InjectStack
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Creates a new InjectStack with the supplied middleware and endpoint.
+	 * Creates a new Builder with the supplied middleware and endpoint.
 	 * 
 	 * @param  array(\InjectStack\MiddlewareInterface)
 	 * @param  Closure|ObjectImplementing__invoke
@@ -56,7 +56,7 @@ class InjectStack
 	// ------------------------------------------------------------------------
 
 	/**
-	 * Sets the endpoint for this InjectStack.
+	 * Sets the endpoint for this Builder.
 	 * 
 	 * @param  Closure|ObjectImplementing__invoke
 	 * @return void
@@ -120,5 +120,5 @@ class InjectStack
 }
 
 
-/* End of file InjectStack.php */
+/* End of file Builder.php */
 /* Location: src/php/InjectStack */

@@ -19,14 +19,14 @@ class Generic implements AdapterInterface
 	 * Runs the supplied application with values fetched from the server environment
 	 * and sends the output to the browser.
 	 * 
-	 * @param  \InjectStack\InjectStack|Closure|ObjectImplementing__invoke
+	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
 	public static function run($app)
 	{
 		$env = $_SERVER;
 		
-		$env['inject.version']    = \InjectStack\InjectStack::VERSION;
+		$env['inject.version']    = \InjectStack\Builder::VERSION;
 		$env['inject.adapter']    = get_called_class();
 		$env['inject.url_scheme'] = (( ! empty($env['HTTPS'])) && $env['HTTPS'] != 'off') ? 'https' : 'http';
 		$env['inject.input']      = file_get_contents('php://input');

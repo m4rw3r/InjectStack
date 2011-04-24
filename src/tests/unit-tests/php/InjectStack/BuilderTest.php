@@ -9,18 +9,18 @@ namespace InjectStack;
 
 use \InjectStack\MiddlewareInterface;
 
-class InjectStackTest extends \PHPUnit_Framework_TestCase
+class BuilderTest extends \PHPUnit_Framework_TestCase
 {
 	public function testInstantiate()
 	{
-		$stack = new InjectStack();
+		$stack = new Builder();
 		
-		$this->assertTrue($stack instanceof InjectStack);
+		$this->assertTrue($stack instanceof Builder);
 	}
 	
 	public function testImplements__invoke()
 	{
-		$stack = new InjectStack();
+		$stack = new Builder();
 		
 		$ref = new \ReflectionObject($stack);
 		
@@ -34,7 +34,7 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testNoEndpointException()
 	{
-		$stack = new InjectStack();
+		$stack = new Builder();
 		
 		$stack('DATA');
 	}
@@ -44,12 +44,12 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testFaultyParameter()
 	{
-		$stack = new InjectStack(new \stdClass);
+		$stack = new Builder(new \stdClass);
 	}
 	
 	public function testOnlyEndpoint()
 	{
-		$stack = new InjectStack();
+		$stack = new Builder();
 		
 		$run = false;
 		
@@ -81,7 +81,7 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 			return $endpoint($env);
 		}));
 		
-		$stack = new InjectStack();
+		$stack = new Builder();
 		
 		$stack->addMiddleware($middleware);
 		$stack->setEndpoint($endpoint);
@@ -115,7 +115,7 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 		}));
 		
 		
-		$stack = new InjectStack();
+		$stack = new Builder();
 		
 		$stack->addMiddleware($middleware);
 		$stack->addMiddleware($middleware2);
@@ -150,7 +150,7 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 			return $middleware('2'.$env).'2';
 		}));
 		
-		$stack = new InjectStack();
+		$stack = new Builder();
 		
 		$stack->addMiddleware($middleware);
 		$stack->prependMiddleware($middleware2);
@@ -176,7 +176,7 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 			return $endpoint($env);
 		}));
 		
-		$stack = new InjectStack(array($middleware), $endpoint);
+		$stack = new Builder(array($middleware), $endpoint);
 		
 		$r = $stack('TESTDATA');
 		
@@ -185,5 +185,5 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 }
 
 
-/* End of file InjectStackTest.php */
+/* End of file BuilderTest.php */
 /* Location: src/tests/unit-tests/php/InjectStack */

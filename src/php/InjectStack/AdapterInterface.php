@@ -20,7 +20,7 @@ interface AdapterInterface
 	 * The Adapter will also handle outputting of the return value from the stack
 	 * in an appropriate way.
 	 * 
-	 * @param  \InjectStack\InjectStack|Closure|ObjectImplementing__invoke
+	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
 	public static function run($app);
