@@ -15,15 +15,15 @@ interface AdapterInterface
 {
 	/**
 	 * Will run the supplied application, fetching the appropriate data to construct
-	 * the $env variable which it then sends to the apps InjectStack.
+	 * the $env variable which it then sends to the app.
 	 * 
 	 * The Adapter will also handle outputting of the return value from the stack
 	 * in an appropriate way.
 	 * 
-	 * @param  \InjectStack\InjectStack
+	 * @param  \InjectStack\InjectStack|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
-	public static function run(InjectStack $app);
+	public static function run($app);
 }
 
 

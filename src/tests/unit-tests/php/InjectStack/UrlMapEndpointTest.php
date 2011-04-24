@@ -26,7 +26,11 @@ class UrlMapEndpointTest extends \PHPUnit_Framework_TestCase
 	{
 		$endpoint = new UrlMapEndpoint();
 		
-		$this->assertTrue(is_callable($endpoint));
+		$ref = new \ReflectionObject($endpoint);
+		
+		$this->assertTrue($ref->hasMethod('__invoke'));
+		$this->assertEquals(1, $ref->getMethod('__invoke')->getNumberOfParameters());
+		$this->assertEquals(1, $ref->getMethod('__invoke')->getNumberOfRequiredParameters());
 	}
 	/**
 	 * @expectedException PHPUnit_Framework_Error

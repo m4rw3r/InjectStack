@@ -28,7 +28,7 @@ class InjectStack
 	/**
 	 * The endpoint for this stack.
 	 * 
-	 * @var Callback
+	 * @var Closure|ObjectImplementing__invoke
 	 */
 	protected $endpoint;
 	
@@ -45,7 +45,7 @@ class InjectStack
 	 * Creates a new InjectStack with the supplied middleware and endpoint.
 	 * 
 	 * @param  array(\InjectStack\MiddlewareInterface)
-	 * @param  callback
+	 * @param  Closure|ObjectImplementing__invoke
 	 */
 	public function __construct(array $middleware = array(), $endpoint = null)
 	{
@@ -58,7 +58,7 @@ class InjectStack
 	/**
 	 * Sets the endpoint for this InjectStack.
 	 * 
-	 * @param  callback
+	 * @param  Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
 	public function setEndpoint($endpoint)
@@ -101,7 +101,7 @@ class InjectStack
 	 * @param  mixed
 	 * @return mixed
 	 */
-	public function run($env)
+	public function __invoke($env)
 	{
 		if(empty($this->endpoint))
 		{

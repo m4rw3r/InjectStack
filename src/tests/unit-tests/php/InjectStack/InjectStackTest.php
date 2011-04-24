@@ -13,9 +13,20 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 {
 	public function testInstantiate()
 	{
-		$m = new InjectStack();
+		$stack = new InjectStack();
 		
-		$this->assertTrue($m instanceof InjectStack);
+		$this->assertTrue($stack instanceof InjectStack);
+	}
+	
+	public function testImplements__invoke()
+	{
+		$stack = new InjectStack();
+		
+		$ref = new \ReflectionObject($stack);
+		
+		$this->assertTrue($ref->hasMethod('__invoke'));
+		$this->assertEquals(1, $ref->getMethod('__invoke')->getNumberOfParameters());
+		$this->assertEquals(1, $ref->getMethod('__invoke')->getNumberOfRequiredParameters());
 	}
 	
 	/**
@@ -23,9 +34,9 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testNoEndpointException()
 	{
-		$m = new InjectStack();
+		$stack = new InjectStack();
 		
-		$m->run('DATA');
+		$stack('DATA');
 	}
 	
 	/**
@@ -33,23 +44,23 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 	 */
 	public function testFaultyParameter()
 	{
-		$m = new InjectStack(new \stdClass);
+		$stack = new InjectStack(new \stdClass);
 	}
 	
 	public function testOnlyEndpoint()
 	{
-		$m = new InjectStack();
+		$stack = new InjectStack();
 		
 		$run = false;
 		
-		$m->setEndpoint(function($data) use(&$run)
+		$stack->setEndpoint(function($data) use(&$run)
 		{
 			$run = $data;
 			
 			return 'RETURN';
 		});
 		
-		$r = $m->run('TESTING!');
+		$r = $stack('TESTING!');
 		
 		$this->assertEquals('TESTING!', $run);
 		$this->assertEquals('RETURN', $r);
@@ -70,12 +81,12 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 			return $endpoint($env);
 		}));
 		
-		$m = new InjectStack();
+		$stack = new InjectStack();
 		
-		$m->addMiddleware($middleware);
-		$m->setEndpoint($endpoint);
+		$stack->addMiddleware($middleware);
+		$stack->setEndpoint($endpoint);
 		
-		$r = $m->run('TESTDATA');
+		$r = $stack('TESTDATA');
 		
 		$this->assertEquals('TESTDATAHANDLED', $r);
 	}
@@ -104,13 +115,13 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 		}));
 		
 		
-		$m = new InjectStack();
+		$stack = new InjectStack();
 		
-		$m->addMiddleware($middleware);
-		$m->addMiddleware($middleware2);
-		$m->setEndpoint($endpoint);
+		$stack->addMiddleware($middleware);
+		$stack->addMiddleware($middleware2);
+		$stack->setEndpoint($endpoint);
 		
-		$r = $m->run('TESTDATA');
+		$r = $stack('TESTDATA');
 		
 		$this->assertEquals('21TESTDATAHANDLED21', $r);
 	}
@@ -139,13 +150,13 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 			return $middleware('2'.$env).'2';
 		}));
 		
-		$m = new InjectStack();
+		$stack = new InjectStack();
 		
-		$m->addMiddleware($middleware);
-		$m->prependMiddleware($middleware2);
-		$m->setEndpoint($endpoint);
+		$stack->addMiddleware($middleware);
+		$stack->prependMiddleware($middleware2);
+		$stack->setEndpoint($endpoint);
 		
-		$r = $m->run('TESTDATA');
+		$r = $stack('TESTDATA');
 		
 		$this->assertEquals('12TESTDATAHANDLED12', $r);
 	}
@@ -165,9 +176,9 @@ class InjectStackTest extends \PHPUnit_Framework_TestCase
 			return $endpoint($env);
 		}));
 		
-		$m = new InjectStack(array($middleware), $endpoint);
+		$stack = new InjectStack(array($middleware), $endpoint);
 		
-		$r = $m->run('TESTDATA');
+		$r = $stack('TESTDATA');
 		
 		$this->assertEquals('TESTDATAHANDLED', $r);
 	}

@@ -15,6 +15,8 @@ interface MiddlewareInterface
 {
 	/**
 	 * Sets the middleware or endpoint to call.
+	 * 
+	 * @param  Closure|ObjectImplementing__invoke
 	 */
 	public function setNext($callback);
 	

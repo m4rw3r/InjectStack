@@ -8,7 +8,6 @@
 namespace InjectStack\Adapter;
 
 use \InjectStack\AdapterInterface;
-use \InjectStack\InjectStack;
 use \InjectStack\Util;
 
 /**
@@ -20,10 +19,10 @@ class Generic implements AdapterInterface
 	 * Runs the supplied application with values fetched from the server environment
 	 * and sends the output to the browser.
 	 * 
-	 * @param  \InjectStack\InjectStack
+	 * @param  \InjectStack\InjectStack|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
-	public static function run(InjectStack $app)
+	public static function run($app)
 	{
 		$env = $_SERVER;
 		
@@ -55,7 +54,7 @@ class Generic implements AdapterInterface
 		// _POST might not be accurate, depends on request type, read from php://input
 		parse_str($env['inject.input'], $env['inject.post']);
 		
-		static::respondWith($app->run($env));
+		static::respondWith($app($env));
 	}
 	
 	// ------------------------------------------------------------------------
