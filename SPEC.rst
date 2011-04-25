@@ -20,14 +20,15 @@ finally let the browser see the result.
 
 In more general terms, the application interface only requires one condition:
 object implementing the method ``__invoke($env)`` which incidentally also
-includes PHP Closures. ``$env`` and the return value of the application
-should have a specific format, see `The Environment Variable`_ and
-`The Return Value`_.
+includes PHP Closures. The ``$env`` parameter and the return value of the
+application are required have a specific format, see `The Environment Variable`_
+and `The Return Value`_.
 
 To make the creation of the stack easier, the class ``\InjectStack\Builder`` 
 and the interface ``\InjectStack\MiddlewareInterface`` has been introduced.
 ``\InjectStack\Builder`` constructs a stack from supplied concrete instances
-of the ``\InjectStack\MiddlewareInterface`` and a final endpoint.
+of the ``\InjectStack\MiddlewareInterface`` and a final endpoint implementing
+the method ``__invoke($env)``.
 
 What is an endpoint?
 --------------------
@@ -35,9 +36,9 @@ What is an endpoint?
 An endpoint is a PHP object implementing ``__invoke($env)`` method (which
 also includes PHP closures taking a single parameter). Usually the main
 endpoint of your application will be a Router which in turn will call the
-controller, or a controller specific ``MiddlewareStack`` or something else.
+controller, or a controller specific ``\InjectStack\Builder`` or something else.
 
-Simple endpoint::
+Running of a simple endpoint::
 
   class MyEndpoint
   {
@@ -52,6 +53,9 @@ Simple endpoint::
   {
       return array(200, array('Content-Type' => 'text/plain'), 'Hello World!');
   };
+  
+  // Run your application:
+  \InjectStack\Adapter\Generic::run($hello_endpoint);
 
 For a more complicated endpoint, see the ``\InjectStack\CascadeEndpoint``.
 This endpoint attempts several callbacks until one does not return a
@@ -75,7 +79,7 @@ the next middleware or endpoint.
 
 The main reason for the usage of an interface is that it is not feasible
 to inject the next middleware using the constructor of a middleware,
-mainly because it will not be as fast or flexible in PHP as it is in ruby.
+mainly because it will not be as fast or flexible in PHP as it is in Ruby.
 
 Here is an example middleware which checks for the ``$_GET`` parameter "go" and 
 returns a 404 if it cannot find it::
@@ -123,11 +127,13 @@ by PHP applications and also the information needed to run said
 application and its components.
 
 ``$env`` is not a static hash, all components of the system are allowed
-to modify the environment to, for example add a global object, filter a
-specific header or change something like the ``REQUEST_TYPE``. This
-can be very useful when for example performing internal HMVC [#]_ requests.
+to modify the environment to, for example, add a global object, filter a
+specific header or change something like the ``REQUEST_METHOD``. This
+can be very useful when for example performing internal HMVC [#]_ requests,
+as you can copy the ``$env`` variable and change a few keys before
+passing it on to the internal controller.
 
-The environment must however conform to a few basic rules:
+The environment variable must however conform to a few basic rules:
 
 Required keys
 -------------
@@ -161,7 +167,9 @@ The Environment variable must always include these keys:
     The URI prefix to be used when referring to static assets which are
     not processed by the framework.
     
-    This is usually the URI without the ``index.php`` file name.
+    This is usually the URI without the ``index.php`` file name, and will
+    usually be taken care of by the concrete class implementing
+    ``\InjectStack\AdapterInterface``.
 
 ``QUERY_STRING``:
     The portion of the request URL that follows the ?, if any. May be empty,
@@ -267,7 +275,7 @@ and also ``\Iterator`` or ``\IteratorAggregate``).
 
 All header keys are strings, and preferably written as they are in
 the HTTP specification, ie. ``Content-Type`` instead of ``content-type``
-or ``content_type``. They values cannot contain ``:`` or ``\n`` and must
+or ``content_type``. Their values cannot contain ``:`` or ``\n`` and must
 match ``/^[a-zA-Z][a-zA-Z0-9_-]*$/``.
 The header ``status`` is not allowed.
 
