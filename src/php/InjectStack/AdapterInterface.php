@@ -23,7 +23,7 @@ interface AdapterInterface
 	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
-	public static function run($app);
+	public function run($app);
 }
 
 

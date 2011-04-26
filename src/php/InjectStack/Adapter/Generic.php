@@ -55,7 +55,7 @@ class Generic implements AdapterInterface
 			parse_str($env['inject.input'], $env['inject.post']);
 		}
 		
-		static::respondWith($app($env));
+		$this->respondWith($app($env));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -66,7 +66,7 @@ class Generic implements AdapterInterface
 	 * @param  array  array(response_code, array(header_title => header_content), content)
 	 * @return void
 	 */
-	protected static function respondWith(array $response)
+	protected function respondWith(array $response)
 	{
 		$response_code = $response[0];
 		$headers = $response[1];

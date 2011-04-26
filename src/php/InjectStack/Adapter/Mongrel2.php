@@ -1,6 +1,6 @@
 <?php
 /*
- * Created by Martin Wernståhl on 2011-03-06.
+ * Created by Martin Wernståhl on 2011-04-25.
  * Copyright (c) 2011 Martin Wernståhl.
  * All rights reserved.
  */
@@ -22,11 +22,11 @@ use \InjectStack\Util;
 class Mongrel2 implements AdapterInterface
 {
 	/**
-	 * The application instance to run on every request.
+	 * If this handler should output information about each request it receives.
 	 * 
-	 * @var Closure|ObjectImplementing__invoke
+	 * @var boolean
 	 */
-	protected $app;
+	protected $debug = false;
 	
 	/**
 	 * The application UUID.
@@ -68,18 +68,20 @@ class Mongrel2 implements AdapterInterface
 	 * 
 	 * @var array(string => mixed)
 	 */
-	protected $default_env;
+	protected $default_env = array();
 	
 	/**
 	 * @param  Closure|ObjectImplementing__invoke  InjectStack application
 	 * @param  string
 	 * @param  string
 	 * @param  string
+	 * @param  array(string => mixed)  Default $env data, use to set
+	 *         SERVER_NAME, SERVER_PORT, SCRIPT_NAME and BASE_URI
 	 */
-	public function __construct($app, $uuid, $pull_addr, $pub_addr)
+	public function __construct($uuid, $pull_addr, $pub_addr, array $default_env = array(), $debug = false)
 	{
-		$this->app  = $app;
-		$this->uuid = $uuid;
+		$this->uuid  = $uuid;
+		$this->debug = $debug;
 		
 		$zmq_context = new ZMQContext();
 		
@@ -92,21 +94,8 @@ class Mongrel2 implements AdapterInterface
 		$this->response = $zmq_context->getSocket(ZMQ::SOCKET_PUB);
 		$this->response->connect($pub_addr);
 		$this->response->setSockOpt(ZMQ::SOCKOPT_IDENTITY, $this->uuid);
-	}
-	
-	// ------------------------------------------------------------------------
-
-	/**
-	 * The whole listen loop.
-	 * 
-	 * @return void
-	 */
-	public function listen()
-	{
-		echo "Listening on {$this->pull_addr} and responding on {$this->pub_addr}...\n";
 		
-		// TODO: Needs config value:
-		$this->default_env = array(
+		$this->default_env = array_merge(array(
 			'SCRIPT_NAME'    => '',
 			'SERVER_NAME'    => 'localhost',
 			'SERVER_PORT'    => 80,
@@ -115,26 +104,50 @@ class Mongrel2 implements AdapterInterface
 			'inject.adapter' => get_called_class(),
 			'inject.get'     => array(),
 			'inject.post'    => array()
-		);
+		), $default_env);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Listens for requests from Mongrel2 and dispatches them to $app, and
+	 * then returns the response to Mongrel2 if there is one.
+	 * 
+	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
+	 * @return void
+	 */
+	public function run($app)
+	{
+		echo "Listening on {$this->pull_addr} and responding on {$this->pub_addr}...\n";
 		
-		$app = $this->app;
+		// TODO: If $app is an instance of InjectStack\Builder, find a way to avoid having to
+		// TODO: cont. build the stack for each request
 		
 		while(true)
 		{
 			list($uuid, $conn_id, $path, $headers, $msg) = $this->parseRequest($this->request->recv());
 			
-			if($headers['METHOD'] == 'JSON')
+			if($headers['METHOD'] == 'JSON' OR $path == '@*')
 			{
 				// TODO: Code
 				continue;
 			}
 			
-			// TODO: Add silent switch?
-			//echo "Got request from $uuid: {$headers['METHOD']} {$headers['PATH']}\n";
+			$this->debug && print("Got request from $uuid: {$headers['METHOD']} {$headers['PATH']}");
 			
 			$env = $this->createEnv($path, $headers, $msg);
 			
-			$this->sendResponse($uuid, $conn_id, $this->httpResponse($app($env)));
+			// Call app, and if app returns != false, send to Mongrel2
+			$response = $app($env);
+			
+			if($response)
+			{
+				$this->debug && print(' responding');
+				
+				$this->sendResponse($uuid, $conn_id, $this->httpResponse($response));
+			}
+			
+			$this->debug && print("\n");
 		}
 	}
 	
@@ -260,29 +273,13 @@ class Mongrel2 implements AdapterInterface
 		
 		$headers['Content-Length'] = strlen($content);
 		
-		$head = '';
+		$head = array();
 		foreach($headers as $k => $v)
 		{
-			$head .= $k.': '.$v."\r\n";
+			$head[] = $k.': '.$v;
 		}
 		
-		return sprintf("HTTP/1.1 %s %s\r\n%s\r\n%s", $response_code, Util::getHttpStatusText($response_code), $head, $content);
-	}
-	
-	// ------------------------------------------------------------------------
-	
-	/**
-	 * Runs the supplied application with values fetched from the server environment
-	 * and sends the output to the browser.
-	 * 
-	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
-	 * @return void
-	 */
-	public static function run($app)
-	{
-		// TODO: Move this to some configuration method or similar
-		$server = new self($app, "B2D9FFB2-4DF9-4430-8E07-93F342009FE9", "tcp://127.0.0.1:9989", "tcp://127.0.0.1:9988");
-		$server->listen();
+		return sprintf("HTTP/1.1 %s %s\r\n%s\r\n\r\n%s", $response_code, Util::getHttpStatusText($response_code), implode("\r\n", $head), $content);
 	}
 }
 
