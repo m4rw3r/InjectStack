@@ -16,6 +16,8 @@ use \InjectStack\Util;
  * Acts as an adapter between the Mongrel2 server and the application stack.
  * 
  * NOTE: Applications starting with this Adapter will be PERSISTENT!
+ * 
+ * Requires ZeroMQ <http://www.zeromq.org/> and its PHP extension to be installed.
  */
 class Mongrel2 implements AdapterInterface
 {
@@ -62,6 +64,13 @@ class Mongrel2 implements AdapterInterface
 	protected $response;
 	
 	/**
+	 * Template for $env.
+	 * 
+	 * @var array(string => mixed)
+	 */
+	protected $default_env;
+	
+	/**
 	 * @param  Closure|ObjectImplementing__invoke  InjectStack application
 	 * @param  string
 	 * @param  string
@@ -96,14 +105,32 @@ class Mongrel2 implements AdapterInterface
 	{
 		echo "Listening on {$this->pull_addr} and responding on {$this->pub_addr}...\n";
 		
+		// TODO: Needs config value:
+		$this->default_env = array(
+			'SCRIPT_NAME'    => '',
+			'SERVER_NAME'    => 'localhost',
+			'SERVER_PORT'    => 80,
+			'BASE_URI'       => '',
+			'inject.version' => \InjectStack\Builder::VERSION,
+			'inject.adapter' => get_called_class(),
+			'inject.get'     => array(),
+			'inject.post'    => array()
+		);
+		
 		$app = $this->app;
 		
 		while(true)
 		{
 			list($uuid, $conn_id, $path, $headers, $msg) = $this->parseRequest($this->request->recv());
 			
+			if($headers['METHOD'] == 'JSON')
+			{
+				// TODO: Code
+				continue;
+			}
+			
 			// TODO: Add silent switch?
-			echo "Got request from $uuid: {$headers['METHOD']} {$headers['PATH']}\n";
+			//echo "Got request from $uuid: {$headers['METHOD']} {$headers['PATH']}\n";
 			
 			$env = $this->createEnv($path, $headers, $msg);
 			
@@ -123,32 +150,41 @@ class Mongrel2 implements AdapterInterface
 	 */
 	public function createEnv($path, $headers, $msg)
 	{
-		$env = array();
+		$env = $this->default_env;
 		
-		$env['REQUEST_METHOD'] = $headers['METHOD'];
-		$env['REQUEST_URI']    = $headers['URI'];
-		$env['PATH_INFO']      = $headers['PATH'];
-		$env['QUERY_STRING']   = empty($headers['QUERY']) ? '' : $headers['QUERY'];
-		$env['SCRIPT_NAME']    = '';   // TODO: Needs config value
-		$env['SERVER_NAME']    = 'localhost'; // TODO: Needs config value
-		$env['SERVER_PORT']    = 80;   // TODO: Needs config value
-		$env['BASE_URI']       = '';   // TODO: Needs config value
-		
-		$env['inject.version']    = \InjectStack\Builder::VERSION;
-		$env['inject.adapter']    = get_called_class();
+		$env['REQUEST_METHOD']    = $headers['METHOD'];
+		$env['REQUEST_URI']       = $headers['URI'];
+		$env['PATH_INFO']         = $headers['PATH'];
+		$env['QUERY_STRING']      = empty($headers['QUERY']) ? '' : $headers['QUERY'];
 		$env['inject.url_scheme'] = 'http';  // TODO: Proper code
-		$env['inject.input']      = $msg;  // TODO: Parse
+		$env['inject.input']      = $msg;
 		
-		// TODO: Code for these:
-		$env['inject.cookies']    = array();
-		$env['inject.files']      = array();
+		// TODO: Code for cookies, implement in middleware
 		
-		parse_str($env['QUERY_STRING'], $env['inject.get']);
-		parse_str($env['inject.input'], $env['inject.post']);
+		empty($env['QUERY_STRING']) OR parse_str($env['QUERY_STRING'], $env['inject.get']);
 		
 		foreach($headers as $hkey => $hval)
 		{
 			$env['HTTP_'.strtoupper(strtr($hkey, '-', '_'))] = $hval;
+		}
+		
+		if( ! empty($env['HTTP_CONTENT_LENGTH']))
+		{
+			$env['CONTENT_LENGTH'] = (int)$env['HTTP_CONTENT_LENGTH'];
+			unset($env['HTTP_CONTENT_LENGTH']);
+		}
+		
+		if( ! empty($env['HTTP_CONTENT_TYPE']))
+		{
+			$env['CONTENT_TYPE'] = $env['HTTP_CONTENT_TYPE'];
+			unset($env['HTTP_CONTENT_TYPE']);
+			
+			// Do we have a form request?
+			if(stripos($env['CONTENT_TYPE'], 'application/x-www-form-urlencoded') === 0)
+			{
+				// Parse!
+				parse_str($env['inject.input'], $env['inject.post']);
+			} 
 		}
 		
 		return $env;
@@ -174,7 +210,7 @@ class Mongrel2 implements AdapterInterface
 			return false;
 		}
 		
-		list($bodylen, $msg) = explode(':', $msg, 2);
+		list($bodylen, $msg) = explode(':', substr($msg, 1), 2);
 		$body    = substr($msg, 0, (int) $bodylen);
 		$msg     = substr($msg, (int) $bodylen);
 		
