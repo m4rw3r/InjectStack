@@ -31,9 +31,6 @@ class Generic implements AdapterInterface
 		$env['inject.url_scheme'] = (( ! empty($env['HTTPS'])) && $env['HTTPS'] != 'off') ? 'https' : 'http';
 		$env['inject.input']      = file_get_contents('php://input');
 		
-		$env['inject.cookies']    = $_COOKIE;
-		$env['inject.files']      = $_FILES;
-		
 		// SCRIPT_NAME + PATH_INFO = URI - QUERY_STRING
 		$env['SCRIPT_NAME'] == '/'  && $env['SCRIPT_NAME']  = '';
 		isset($env['QUERY_STRING']) OR $env['QUERY_STRING'] = '';
@@ -51,8 +48,12 @@ class Generic implements AdapterInterface
 			parse_str($env['QUERY_STRING'], $env['inject.get']);
 		}
 		
-		// _POST might not be accurate, depends on request type, read from php://input
-		parse_str($env['inject.input'], $env['inject.post']);
+		if($env['REQUEST_METHOD'] != 'POST' && ! empty($env['CONTENT_TYPE']) &&
+			stripos($env['CONTENT_TYPE'], 'application/x-www-form-urlencoded') === 0)
+		{
+			// $_POST not be accurate, depends on request type, read from php://input
+			parse_str($env['inject.input'], $env['inject.post']);
+		}
 		
 		static::respondWith($app($env));
 	}
