@@ -207,19 +207,15 @@ InjectStack's ``ServerAdapter`` s will include these keys:
     Contains the GET data.
 
 ``inject.post``:
-    Contains the POST data, ie. parsed ``inject.input``.
-
-``inject.cookies``:
-    Contains the Cookies parsed by PHP (same as ``$_COOKIE``).
-
-``inject.files``:
-    Contains a list of files uploaded with the request (same as ``$_FILES``).
+    Contains the POST data, ie. parsed ``inject.input``, provided the request's
+    ``REQUEST_METHOD`` is ``POST`` or that the ``CONTENT_TYPE`` is
+    ``application/x-www-form-urlencoded`` or ``multipart/form-data``.
 
 ``inject.input``:
     Contains the request body.
 
 .. TODO: Add more when a few middleware gets standardized, like error
-   handler, session, cookie storage etc.
+   handler, session, cookie storage, file upload etc.
 
 Optional keys with restrictions
 -------------------------------
