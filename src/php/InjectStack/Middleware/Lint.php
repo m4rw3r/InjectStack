@@ -105,8 +105,6 @@ class Lint implements MiddlewareInterface
 				'inject.adapter',
 				'inject.get',
 				'inject.post',
-				'inject.cookies',
-				'inject.files',
 				'inject.input'
 		);
 		
@@ -141,8 +139,6 @@ class Lint implements MiddlewareInterface
 		
 		$this->assert('inject.get must be an array',     $this->isArrayEquivalent($env['inject.get']));
 		$this->assert('inject.post must be an array',    $this->isArrayEquivalent($env['inject.post']));
-		$this->assert('inject.cookies must be an array', $this->isArrayEquivalent($env['inject.cookies']));
-		$this->assert('inject.files must be an array',   $this->isArrayEquivalent($env['inject.files']));
 		
 		$this->assert(sprintf('Unknown REQUEST_METHOD %s', $env['REQUEST_METHOD']),
 			preg_match('/^[0-9A-Za-z!\#$%&\'*+.^_`|~-]+$/', $env['REQUEST_METHOD']));
