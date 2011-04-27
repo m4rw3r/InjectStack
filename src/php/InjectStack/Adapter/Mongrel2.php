@@ -113,15 +113,19 @@ class Mongrel2 implements AdapterInterface
 	 * Listens for requests from Mongrel2 and dispatches them to $app, and
 	 * then returns the response to Mongrel2 if there is one.
 	 * 
+	 * NOTE:
+	 * 
+	 * If you use a \InjectStack\Builder instance, it is recommended to pass
+	 * the value from \InjectStack\Builder->build() instead of the Builder
+	 * instance itself. This will avoid the rebuilding of the stack for each
+	 * request.
+	 * 
 	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
 	public function run($app)
 	{
 		echo "Listening on {$this->pull_addr} and responding on {$this->pub_addr}...\n";
-		
-		// TODO: If $app is an instance of InjectStack\Builder, find a way to avoid having to
-		// TODO: cont. build the stack for each request
 		
 		while(true)
 		{
