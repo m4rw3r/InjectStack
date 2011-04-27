@@ -182,6 +182,30 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 		
 		$this->assertEquals('TESTDATAHANDLED', $r);
 	}
+	
+	public function testBuildMethod()
+	{
+		$endpoint = function($env)
+		{
+			return 'Foobar';
+		};
+		
+		$stack = new Builder(array(), $endpoint);
+		
+		$this->assertEquals($endpoint, $stack->build());
+		
+		$endpoint = function($env)
+		{
+			return $env.'HANDLED';
+		};
+		
+		$middleware = $this->getMock('InjectStack\\MiddlewareInterface');
+		$middleware->expects($this->once())->method('setNext')->with($endpoint);
+		
+		$stack = new Builder(array($middleware), $endpoint);
+		
+		$this->assertEquals($middleware, $stack->build());
+	}
 }
 
 

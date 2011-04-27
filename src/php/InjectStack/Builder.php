@@ -103,6 +103,20 @@ class Builder
 	 */
 	public function __invoke($env)
 	{
+		$callback = $this->build();
+		
+		return $callback($env);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Builds the middleware chain and returns it.
+	 * 
+	 * @return Closure|MiddlewareInterface|ObjectImplementing__invoke
+	 */
+	public function build()
+	{
 		if(empty($this->endpoint))
 		{
 			throw new NoEndpointException();
@@ -115,7 +129,7 @@ class Builder
 			return $middleware;
 		}, $this->endpoint);
 		
-		return $callback($env);
+		return $callback;
 	}
 }
 
