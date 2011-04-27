@@ -22,7 +22,7 @@ class Generic implements AdapterInterface
 	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
-	public static function run($app)
+	public function run($app)
 	{
 		$env = $_SERVER;
 		
@@ -66,7 +66,7 @@ class Generic implements AdapterInterface
 	 * @param  array  array(response_code, array(header_title => header_content), content)
 	 * @return void
 	 */
-	protected function respondWith(array $response)
+	function respondWith(array $response)
 	{
 		$response_code = $response[0];
 		$headers = $response[1];
