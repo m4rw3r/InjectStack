@@ -96,7 +96,7 @@ class Lint implements MiddlewareInterface
 				'PATH_INFO',
 				'QUERY_STRING',
 				'REQUEST_METHOD',
-				'REQUEST_URI',
+				'BASE_URI',
 				'SCRIPT_NAME',
 				'SERVER_NAME',
 				'SERVER_PORT',
