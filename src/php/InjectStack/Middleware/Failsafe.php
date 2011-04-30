@@ -13,7 +13,7 @@ use \InjectStack\MiddlewareInterface;
  * Converts any thrown exceptions into a 500 status which is passed to parent
  * middleware.
  */
-class ShowStatus implements MiddlewareInterface
+class Failsafe implements MiddlewareInterface
 {
 	/**
 	 * The callback for the next middleware or the endpoint in this middleware
