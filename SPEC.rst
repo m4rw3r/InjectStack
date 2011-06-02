@@ -55,7 +55,8 @@ Running of a simple endpoint::
   };
   
   // Run your application:
-  \InjectStack\Adapter\Generic::run($hello_endpoint);
+  $adapter = new \InjectStack\Adapter\Generic();
+  $adapter->run($hello_endpoint);
 
 For a more complicated endpoint, see the ``\InjectStack\CascadeEndpoint``.
 This endpoint attempts several callbacks until one does not return a
