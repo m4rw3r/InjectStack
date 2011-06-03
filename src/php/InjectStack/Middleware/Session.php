@@ -125,9 +125,11 @@ class Session implements MiddlewareInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Tells the storage to remove the data associated with the supplied session
+	 * bucket and gives it a new id.
 	 * 
-	 * 
-	 * @return 
+	 * @param  \InjectStack\Middleware\Session\Bucket
+	 * @return void
 	 */
 	public function invalidateSession(Bucket $data)
 	{
@@ -139,9 +141,10 @@ class Session implements MiddlewareInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Destroys the session the supplied bucket represents.
 	 * 
-	 * 
-	 * @return 
+	 * @param  \InjectStack\Middleware\Session\Bucket
+	 * @return void
 	 */
 	public function destroySession(Bucket $data)
 	{
@@ -153,9 +156,9 @@ class Session implements MiddlewareInterface
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Generates a Session id in base 64.
 	 * 
-	 * 
-	 * @return 
+	 * @return string
 	 */
 	public function generateSessionId()
 	{

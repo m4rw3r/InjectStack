@@ -137,9 +137,10 @@ class Bucket extends ArrayObject
 	// ------------------------------------------------------------------------
 
 	/**
+	 * Destroys the session: removes the Session id from the client, destroys
+	 * data in storage and also clears the contents of this object.
 	 * 
-	 * 
-	 * @return 
+	 * @return void
 	 */
 	public function destroySession()
 	{
