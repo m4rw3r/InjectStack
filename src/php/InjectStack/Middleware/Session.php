@@ -109,7 +109,10 @@ class Session implements MiddlewareInterface
 		$callback = $this->next;
 		$ret      = $callback($env);
 		
-		$this->storage->saveSession($env[$this->sess_key]);
+		if($env[$this->sess_key]->getId() !== false)
+		{
+			$this->storage->saveSession($env[$this->sess_key]);
+		}
 		
 		if($env[$this->sess_key]->isNew())
 		{
