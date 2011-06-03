@@ -26,23 +26,55 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 		
 		$this->assertTrue($obj instanceof Bucket);
 		$this->assertTrue($obj instanceof ArrayObject);
+		$this->assertEquals(array(), $obj->getArrayCopy());
 		$this->assertEquals('id', $obj->getId());
+		$this->assertFalse($obj->isNew());
+	}
+	public function testInstantiate2()
+	{
+		$obj = new Bucket($this->getSessionMock(), 'id', array(), false);
+		
+		$this->assertTrue($obj instanceof Bucket);
+		$this->assertTrue($obj instanceof ArrayObject);
+		$this->assertEquals(array(), $obj->getArrayCopy());
+		$this->assertEquals('id', $obj->getId());
+		$this->assertFalse($obj->isNew());
+	}
+	public function testInstantiate3()
+	{
+		$obj = new Bucket($this->getSessionMock(), 'id', array(), true);
+		
+		$this->assertTrue($obj instanceof Bucket);
+		$this->assertTrue($obj instanceof ArrayObject);
+		$this->assertEquals(array(), $obj->getArrayCopy());
+		$this->assertEquals('id', $obj->getId());
+		$this->assertTrue($obj->isNew());
+	}
+	public function testInstantiate4()
+	{
+		$obj = new Bucket($this->getSessionMock(), 'id', array('test' => 'data'), true);
+		
+		$this->assertTrue($obj instanceof Bucket);
+		$this->assertTrue($obj instanceof ArrayObject);
+		$this->assertEquals(array('test' => 'data'), $obj->getArrayCopy());
+		$this->assertEquals('id', $obj->getId());
+		$this->assertTrue($obj->isNew());
 	}
 	/**
 	 * @expectedException PHPUnit_Framework_Error
 	 */
-	public function testInstantiate2()
+	public function testInstantiate5()
 	{
 		$obj = new Bucket(new stdClass, 'id');
 	}
 	/**
 	 * @expectedException PHPUnit_Framework_Error
 	 */
-	public function testInstantiate3()
+	public function testInstantiate6()
 	{
 		$obj = new Bucket($this->getSessionMock(), 'id', 'text');
 	}
-	public function testInstantiate4()
+	public function testInstantiate7()
 	{
 		$obj = new Bucket($this->getSessionMock(), 'yw3ry', array('test' => 'lol'));
 		
@@ -57,6 +89,7 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('yw3ry', $obj->getId());
 		$obj->setId('newid');
 		$this->assertEquals('newid', $obj->getId());
+		$this->assertTrue($obj->isNew());
 	}
 	public function testClearSession()
 	{
@@ -65,6 +98,7 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals(array('test' => 'lol'), $obj->getArrayCopy());
 		$obj->clearSession();
 		$this->assertEquals(array(), $obj->getArrayCopy());
+		$this->assertFalse($obj->isNew());
 	}
 	public function testInvalidateSession()
 	{
@@ -77,6 +111,47 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 		
 		$obj->invalidateSession();
 		$this->assertEquals(array(), $obj->getArrayCopy());
+		$this->assertFalse($obj->isNew()); // Session changes the ID, so still false
+	}
+	public function testInvalidateSessionAlt()
+	{
+		$mock = $this->getSessionMock();
+		
+		$mock->expects($this->once())->method('invalidateSession')
+			->with($this->isInstanceOf('InjectStack\\Middleware\\Session\\Bucket'));
+		
+		$obj = new Bucket($mock, 'yw3ry', array('test' => 'lol'));
+		
+		$obj->invalidateSession(false);
+		$this->assertEquals(array(), $obj->getArrayCopy());
+		$this->assertFalse($obj->isNew()); // Session changes the ID, so still false
+	}
+	public function testInvalidateSessionAlt2()
+	{
+		$mock = $this->getSessionMock();
+		
+		$mock->expects($this->once())->method('invalidateSession')
+			->with($this->isInstanceOf('InjectStack\\Middleware\\Session\\Bucket'));
+		
+		$obj = new Bucket($mock, 'yw3ry', array('test' => 'lol'));
+		
+		$obj->invalidateSession(true);
+		$this->assertEquals(array('test' => 'lol'), $obj->getArrayCopy());
+		$this->assertFalse($obj->isNew()); // Session changes the ID, so still false
+	}
+	public function testDestroySession()
+	{
+		$mock = $this->getSessionMock();
+		
+		$obj = new Bucket($mock, 'yw3ry', array('test' => 'lol'));
+		
+		$mock->expects($this->once())->method('destroySession')
+			->with($this->isInstanceOf('InjectStack\\Middleware\\Session\\Bucket'));
+		
+		$obj->destroySession();
+		
+		$this->assertEquals(array(), $obj->getArrayCopy());
+		$this->assertFalse($obj->isNew()); // Session changes the ID, so still false
 	}
 }
 
