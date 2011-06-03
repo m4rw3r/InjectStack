@@ -7,6 +7,11 @@
 
 namespace InjectStack\Middleware;
 
+use \ArrayAccess;
+use \Countable;
+use \Iterator;
+use \IteratorAggregate;
+
 use \InjectStack\MiddlewareInterface;
 
 /**
@@ -185,7 +190,7 @@ class Lint implements MiddlewareInterface
 			
 			$this->assert('Header must not contain Status', strtolower($hkey) != 'status');
 			
-			$this->assert("Header names must not contain : or \\n", ! preg_match('/[:\n]/', $hkey));
+			$this->assert('Header names must not contain : or \\n', ! preg_match('/[:\n]/', $hkey));
 			
 			$this->assert('Invalid header name', preg_match('/^[a-zA-Z][a-zA-Z0-9_-]*$/', $hkey));
 			
@@ -241,6 +246,7 @@ class Lint implements MiddlewareInterface
 	 */
 	public function checkContentLengthHeader($response_code, $headers, $body)
 	{
+		// TODO: Remove? As adapters automatically add it?
 		$content_length = false;
 		
 		foreach($headers as $hkey => $hval)
@@ -304,11 +310,11 @@ class Lint implements MiddlewareInterface
 	public function isArrayEquivalent($value)
 	{
 		return is_array($value) OR
-				$value instanceof \ArrayAccess &&
-				$value instanceof \Countable &&
+				$value instanceof ArrayAccess &&
+				$value instanceof Countable &&
 				(
-					$value instanceof \Iterator OR
-					$value instanceof \IteratorAggregate
+					$value instanceof Iterator OR
+					$value instanceof IteratorAggregate
 				);
 	}
 	
