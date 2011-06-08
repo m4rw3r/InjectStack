@@ -13,8 +13,8 @@ use \InjectStack\Request;
 use \InjectStack\MiddlewareInterface;
 
 /**
- * Converts any thrown exceptions into a 500 status which is passed to parent
- * middleware.
+ * Takes any thrown exception and prints the exception and stack trace,
+ * supports html, json and xml depending on Accept header.
  */
 class ShowException implements MiddlewareInterface
 {
