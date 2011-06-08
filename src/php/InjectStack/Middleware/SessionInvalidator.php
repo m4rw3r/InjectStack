@@ -98,6 +98,8 @@ class SessionInvalidator implements MiddlewareInterface
 		
 		if($this->options['check_user_agent'])
 		{
+			empty($env['HTTP_USER_AGENT']) AND $env['HTTP_USER_AGENT'] = '';
+			
 			if( ! empty($bucket['HTTP_USER_AGENT']))
 			{
 				// = has a higher operator priority than OR
