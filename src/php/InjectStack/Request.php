@@ -206,19 +206,23 @@ class Request extends ArrayObject
 	{
 		$formats = (Array) $formats;
 		
-		foreach($this->getAccepts() as $a => $v)
+		$accepts = $this->getAccepts();
+		
+		if(in_array('*/*', $accepts))
 		{
-			if($a == '*/*')
-			{
-				return current($formats);
-			}
-			elseif(in_array($a, $formats))
-			{
-				return $a;
-			}
+			return reset($formats);
 		}
 		
-		return current($formats);
+		$matches = array_intersect($formats, $accepts);
+		
+		if( ! empty($matches))
+		{
+			return reset($matches);
+		}
+		else
+		{
+			return reset($formats);
+		}
 	}
 	
 	// ------------------------------------------------------------------------
