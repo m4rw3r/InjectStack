@@ -9,18 +9,26 @@ echo '<?xml version="1.0" encoding="UTF-8"?>'; ?>
 	<title>Inject Framework - HTTP/1.1 500 Internal Server Error</title>
 	
 	<style type="text/css">
-		.environment .table {
+		.environment h3 span {
+			font-size: 0.7em;
+			padding-left: 2em;
+			color: #ccc;
+		}
+		.environment table {
 			display: none;
 		}
-		.environment:hover .table {
+		.environment:hover table {
 			display: block;
+		}
+		.environment:hover h3 span {
+			display: inline;
 		}
 		.environment table {
 			padding: 1em;
-			font-size: 0.7em;
 		}
 		.environment td {
-			padding-right: 1em;
+			padding: 0.2em 1em 0.2em 1em;
+			font-size: 0.7em;
 		}
 		.environment tr.odd {
 			background: #eee;
@@ -119,7 +127,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>'; ?>
 		</p>
 		
 		<div class="environment">
-			<h3>Environment</h3>
+			<h3>Environment <span>(hover to show)</span></h3>
 		
 			<table border="0" cellspacing="0" cellpadding="0">
 				<tr><th>Key</th><th>Data</th></tr>
