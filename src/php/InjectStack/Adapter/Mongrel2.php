@@ -96,7 +96,6 @@ class Mongrel2 implements AdapterInterface
 		$this->response->setSockOpt(ZMQ::SOCKOPT_IDENTITY, $this->uuid);
 		
 		$this->default_env = array_merge(array(
-			'SCRIPT_NAME'    => '',
 			'SERVER_NAME'    => 'localhost',
 			'SERVER_PORT'    => 80,
 			'BASE_URI'       => '',
@@ -171,7 +170,8 @@ class Mongrel2 implements AdapterInterface
 		
 		$env['REQUEST_METHOD']    = $headers['METHOD'];
 		$env['REQUEST_URI']       = $headers['URI'];
-		$env['PATH_INFO']         = $headers['PATH'];
+		$env['SCRIPT_NAME']       = $headers['PATTERN'] == '/' ? '' : $headers['PATTERN'];
+		$env['PATH_INFO']         = '/'.trim(substr($headers['PATH'], strlen($headers['PATTERN'])), '/');
 		$env['QUERY_STRING']      = empty($headers['QUERY']) ? '' : $headers['QUERY'];
 		$env['inject.url_scheme'] = 'http';  // TODO: Proper code
 		$env['inject.input']      = $msg;
