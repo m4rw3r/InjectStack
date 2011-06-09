@@ -14,15 +14,18 @@ use \InjectStack\Adapter\Generic as ServerAdapter;
 // Set include path for the autoloader, so we can load stuff even if we haven't been installed by PEAR
 set_include_path(realpath(__DIR__.'/../src/php').PATH_SEPARATOR.get_include_path());
 
+
 // Include the autoloader and instantiate it
 require 'Inject/ClassTools/Autoloader/Generic.php';
 
 $loader = new Autoloader();
 $loader->register();
 
+
 // Initialize Memcached to use with session middleware.
 $cache = new Memcached;
 $cache->addServer('127.0.0.1', 11211);
+
 
 // Create a stack with middleware ending in an application:
 $stack = new Builder(
@@ -43,6 +46,7 @@ $stack = new Builder(
 		// Session invalidator, invalidates session if user changes IP or similar
 		new Middleware\SessionInvalidator()
 	),
+	
 	// The application itself:
 	function($env)
 	{
@@ -61,6 +65,7 @@ $stack = new Builder(
 		return array(200, array('Content-Type' => 'text/plain'), $message);
 	}
 );
+
 
 // Create the adapter and run the application!
 $adapter = new ServerAdapter();
