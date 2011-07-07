@@ -5,4 +5,5 @@ nbproject
 review
 vendor
 .DS_Store
-examples/mongrel2_server/deployment/logs/access.log
+examples/mongrel2_server/deployment/logs/*
+examples/mongrel2_server/deployment/run/*
