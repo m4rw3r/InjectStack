@@ -12,7 +12,38 @@ namespace InjectStack\Middleware\Session;
  */
 class Mongrel2CookieIdHandler implements IdHandlerInterface
 {
+	/**
+	 * List of cookie options to include in the Set-Cookie header.
+	 * 
+	 * @var array(mixed)
+	 */
+	protected $cookie_options = array();
+	
+	/**
+	 * The name of the cookie to store the id in.
+	 * 
+	 * @var string
+	 */
 	protected $cookie_name = 'InjectFw';
+	
+	/**
+	 * @param  string   The name of the read and stored cookie
+	 * @param  int      The unix timestamp when the cookie will expire, 0 = session end
+	 * @param  string   The path for which the cookie will be valid
+	 * @param  string   The domain for which the cookie will be valid
+	 * @param  boolean  If the cookie is only allowed to be sent across SSL connections
+	 * @param  boolean  If the cookie is only allowed to be sent using HTTP requests
+	 */
+	public function __construct($cookie_name = 'InjectFw', $expires = 0, $path = null, $domain = null, $secure_only = false, $http_only = false)
+	{
+		$this->cookie_name = $cookie_name;
+		
+		empty($expires) OR $this->cookie_options['Expires'] = date(DATE_RFC822, $expires);
+		empty($domain) OR $this->cookie_options['Domain'] = $domain;
+		empty($path) OR $this->cookie_options['Path'] = $path;
+		empty($secure_only) OR $this->cookie_options[] = 'Secure';
+		empty($http_only) OR $this->cookie_options[] = 'HttpOnly';
+	}
 	
 	/**
 	 * Fetches the user id from the client, if there is no user id, or
@@ -23,15 +54,17 @@ class Mongrel2CookieIdHandler implements IdHandlerInterface
 	 */
 	public function fetchUserId(array $env)
 	{
-		if( ! $renew && ! empty($env['HTTP_COOKIE']) &&
+		if( ! empty($env['HTTP_COOKIE']) &&
 			strpos($env['HTTP_COOKIE'], $this->cookie_name) !== false)
 		{
-			// TODO: Replace with proper code, do not presume that all cookes reside on the domain
-			parse_str($env['HTTP_COOKIE'], $cookie);
-			
-			if( ! empty($cookie[$this->cookie_name]))
+			foreach(explode(';', $env['HTTP_COOKIE']) as $part)
 			{
-				return $cookie[$this->cookie_name];
+				$pair = explode('=', $part);
+				
+				if(count($pair) == 2 && $pair[0] === $this->cookie_name)
+				{
+					return $pair[1];
+				}
 			}
 		}
 		
@@ -47,7 +80,14 @@ class Mongrel2CookieIdHandler implements IdHandlerInterface
 	 */
 	public function storeUserId($id, array $ret)
 	{
-		$ret[1]['Set-Cookie'] = http_build_query(array($this->cookie_name => $id));
+		$str = array();
+		
+		foreach(array_merge(array($this->cookie_name => $id), $this->cookie_options) as $k => $v)
+		{
+			$str[] = is_numeric($k) ? $v : $k.'='.$v;
+		}
+		
+		$ret[1]['Set-Cookie'] = implode('; ', $str);
 		
 		return $ret;
 	}
