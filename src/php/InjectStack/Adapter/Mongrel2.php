@@ -9,7 +9,7 @@ namespace InjectStack\Adapter;
 
 use \ZMQ;
 use \ZMQContext;
-use \InjectStack\AdapterInterface;
+use \ZMQException;
 use \InjectStack\Util;
 
 /**
@@ -18,8 +18,11 @@ use \InjectStack\Util;
  * NOTE: Applications starting with this Adapter will be PERSISTENT!
  * 
  * Requires ZeroMQ <http://www.zeromq.org/> and its PHP extension to be installed.
+ * 
+ * Requires PCNTL <http://php.net/manual/en/book.pcntl.php> if you plan to use serve()
+ * to spawn multiple worker processes, see AbstractDaemon for more information.
  */
-class Mongrel2 implements AdapterInterface
+class Mongrel2 extends AbstractDaemon
 {
 	/**
 	 * If this handler should output information about each request it receives.
@@ -71,29 +74,27 @@ class Mongrel2 implements AdapterInterface
 	protected $default_env = array();
 	
 	/**
-	 * @param  Closure|ObjectImplementing__invoke  InjectStack application
+	 * Loop in run() while this is true.
+	 * 
+	 * @var boolean
+	 */
+	protected $do_run = true;
+	
+	/**
 	 * @param  string
 	 * @param  string
 	 * @param  string
 	 * @param  array(string => mixed)  Default $env data, use to set
 	 *         SERVER_NAME, SERVER_PORT, SCRIPT_NAME and BASE_URI
+	 * @param  boolean  If to print received requests
 	 */
 	public function __construct($uuid, $pull_addr, $pub_addr, array $default_env = array(), $debug = false)
 	{
 		$this->uuid  = $uuid;
 		$this->debug = $debug;
 		
-		$zmq_context = new ZMQContext();
-		
 		$this->pull_addr = $pull_addr;
 		$this->pub_addr  = $pub_addr;
-		
-		$this->request  = $zmq_context->getSocket(ZMQ::SOCKET_PULL);
-		$this->request->connect($pull_addr);
-		
-		$this->response = $zmq_context->getSocket(ZMQ::SOCKET_PUB);
-		$this->response->connect($pub_addr);
-		$this->response->setSockOpt(ZMQ::SOCKOPT_IDENTITY, $this->uuid);
 		
 		$this->default_env = array_merge(array(
 			'SERVER_NAME'    => 'localhost',
@@ -112,6 +113,9 @@ class Mongrel2 implements AdapterInterface
 	 * Listens for requests from Mongrel2 and dispatches them to $app, and
 	 * then returns the response to Mongrel2 if there is one.
 	 * 
+	 * Use serve() instead to create multiple children and a monitor process
+	 * which will respawn any exited children.
+	 * 
 	 * NOTE:
 	 * 
 	 * If you use a \InjectStack\Builder instance, it is recommended to pass
@@ -124,34 +128,60 @@ class Mongrel2 implements AdapterInterface
 	 */
 	public function run($app)
 	{
+		// Can't share ZeroMQ sockets, so we need one per child
+		$zmq_context = new ZMQContext();
+		
+		$this->request  = $zmq_context->getSocket(ZMQ::SOCKET_PULL);
+		$this->request->connect($this->pull_addr);
+		
+		$this->response = $zmq_context->getSocket(ZMQ::SOCKET_PUB);
+		$this->response->connect($this->pub_addr);
+		$this->response->setSockOpt(ZMQ::SOCKOPT_IDENTITY, $this->uuid);
+		
 		echo "Listening on {$this->pull_addr} and responding on {$this->pub_addr}...\n";
 		
-		while(true)
+		while($this->do_run)
 		{
-			list($uuid, $conn_id, $path, $headers, $msg) = $this->parseRequest($this->request->recv());
-			
-			if($headers['METHOD'] == 'JSON' OR $path == '@*')
+			try
 			{
-				// TODO: Code
-				continue;
-			}
-			
-			$this->debug && print("Got request from $uuid: {$headers['METHOD']} {$headers['PATH']}");
-			
-			$env = $this->createEnv($path, $headers, $msg);
-			
-			// Call app, and if app returns != false, send to Mongrel2
-			$response = $app($env);
-			
-			if($response)
-			{
-				$this->debug && print(' responding');
+				list($uuid, $conn_id, $path, $headers, $msg) = $this->parseRequest($this->request->recv());
 				
-				$this->sendResponse($uuid, $conn_id, $this->httpResponse($response));
+				if($headers['METHOD'] == 'JSON' OR $path == '@*')
+				{
+					// TODO: Code
+					continue;
+				}
+				
+				$this->debug && print("Got request from $uuid: {$headers['METHOD']} {$headers['PATH']}");
+				
+				$env = $this->createEnv($path, $headers, $msg);
+				
+				// Call app, and if app returns != false, send to Mongrel2
+				$response = $app($env);
+				
+				if($response)
+				{
+					$this->debug && print(' responding');
+					
+					$this->sendResponse($uuid, $conn_id, $this->httpResponse($response));
+				}
+				
+				$this->debug && print("\n");
 			}
-			
-			$this->debug && print("\n");
+			catch(ZMQException $e)
+			{
+				// TODO: Is this an ok way of suicide?
+				die("ZeroMQ: ".$e->getMessage()."\n");
+			}
 		}
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	protected function shutdownGracefully()
+	{
+		// Stop the run loop
+		$this->do_run = false;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -168,6 +198,7 @@ class Mongrel2 implements AdapterInterface
 	{
 		$env = $this->default_env;
 		
+		$env['REMOTE_ADDR']       = $headers['x-forwarded-for'];
 		$env['REQUEST_METHOD']    = $headers['METHOD'];
 		$env['REQUEST_URI']       = $headers['URI'];
 		$env['SCRIPT_NAME']       = $headers['PATTERN'] == '/' ? '' : $headers['PATTERN'];
@@ -175,8 +206,6 @@ class Mongrel2 implements AdapterInterface
 		$env['QUERY_STRING']      = empty($headers['QUERY']) ? '' : $headers['QUERY'];
 		$env['inject.url_scheme'] = 'http';  // TODO: Proper code
 		$env['inject.input']      = $msg;
-		
-		// TODO: Code for cookies, implement in middleware
 		
 		empty($env['QUERY_STRING']) OR parse_str($env['QUERY_STRING'], $env['inject.get']);
 		
@@ -201,7 +230,7 @@ class Mongrel2 implements AdapterInterface
 			{
 				// Parse!
 				parse_str($env['inject.input'], $env['inject.post']);
-			} 
+			}
 		}
 		
 		return $env;
