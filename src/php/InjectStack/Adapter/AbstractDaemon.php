@@ -96,7 +96,7 @@ abstract class AbstractDaemon implements AdapterInterface
 			pcntl_signal(SIGUSR1, SIG_DFL);
 			
 			// Remove dead child PID
-			if($key = array_search($dead_pid, $this->child_pids))
+			if(($key = array_search($dead_pid, $this->child_pids)) !== -1)
 			{
 				unset($this->child_pids[$key]);
 			}
