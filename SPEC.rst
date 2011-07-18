@@ -183,6 +183,9 @@ The Environment variable must always include these keys:
     request URL. SERVER_NAME and SERVER_PORT can never be empty strings,
     and so are always required.
 
+``REMOTE_ADDR``:
+    The IP address of the remote connection which the server received.
+
 ``HTTP_`` Variables:
     Variables corresponding to the client-supplied HTTP request headers
     (i.e., variables whose names begin with HTTP\_). The presence or absence
@@ -213,7 +216,7 @@ InjectStack's ``ServerAdapter`` s will include these keys:
     ``application/x-www-form-urlencoded`` or ``multipart/form-data``.
 
 ``inject.input``:
-    Contains the request body.
+    Stream containing the request body, will be closed by the adapter upon request completion.
 
 .. TODO: Add more when a few middleware gets standardized, like error
    handler, session, cookie storage, file upload etc.
