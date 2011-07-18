@@ -8,6 +8,7 @@
 namespace InjectStack\Adapter;
 
 use \Closure;
+use \Exception;
 use \InjectStack\AdapterInterface;
 
 /**
@@ -22,6 +23,7 @@ use \InjectStack\AdapterInterface;
  * $app_init = function()
  * {
  *     // Create and return our application here, will be run for each child process
+ *     // This is run before we are listening for any requests
  *     
  *     $app = function($env)
  *     {
@@ -37,6 +39,15 @@ use \InjectStack\AdapterInterface;
  * // Spawn 4 worker processes
  * $adapter->serve($app_init, 4);
  * </code>
+ * 
+ * If a worker process dies, for any reason, it will be replaced with a new fork.
+ * 
+ * To force a re-fork of all the worker processes, send a SIGUSR1 signal to
+ * the monitor process (the one manually started). This will make all children
+ * quit as soon as they do not serve a request.
+ * 
+ * To kill the monitor and all workers, just send the normal SIGTERM or SIGHUP
+ * signal to the managing process and it will forward it to the children.
  */
 abstract class AbstractDaemon implements AdapterInterface
 {
@@ -151,7 +162,7 @@ abstract class AbstractDaemon implements AdapterInterface
 	// ------------------------------------------------------------------------
 	
 	/**
-	 * Attempts to fork this process, if success the child will call run() with the result
+	 * Attempts to fork this process, if successful; the child will call run() with the result
 	 * from $app_builder and the pid will be returned with the parent.
 	 * 
 	 * @param  Closure  Function to be called to create the non-shared resources and finally
@@ -179,8 +190,7 @@ abstract class AbstractDaemon implements AdapterInterface
 				$this->run($app_builder());
 			}
 			
-			// TODO: Proper exception
-			throw new Exception("Worker died.");
+			die("[Worker died normally]\n");
 		}
 		
 		echo "Forked child $pid\n";
