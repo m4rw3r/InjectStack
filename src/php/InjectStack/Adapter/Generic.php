@@ -11,7 +11,8 @@ use \InjectStack\AdapterInterface;
 use \InjectStack\Util;
 
 /**
- * Acts as an adapter between the server and the application stack.
+ * Acts as an adapter between the server and the application stack, presumes MODPHP
+ * or FastCGI or similar.
  */
 class Generic implements AdapterInterface
 {
@@ -29,7 +30,8 @@ class Generic implements AdapterInterface
 		$env['inject.version']    = \InjectStack\Builder::VERSION;
 		$env['inject.adapter']    = get_called_class();
 		$env['inject.url_scheme'] = (( ! empty($env['HTTPS'])) && $env['HTTPS'] != 'off') ? 'https' : 'http';
-		$env['inject.input']      = file_get_contents('php://input');
+		// No need to close this stream, PHP automatically closes when this process reloads
+		$env['inject.input']      = fopen('php://input', 'r');
 		
 		// SCRIPT_NAME + PATH_INFO = URI - QUERY_STRING
 		$env['SCRIPT_NAME'] == '/'  && $env['SCRIPT_NAME']  = '';
@@ -52,7 +54,7 @@ class Generic implements AdapterInterface
 			stripos($env['CONTENT_TYPE'], 'application/x-www-form-urlencoded') === 0)
 		{
 			// $_POST not be accurate, depends on request type, read from php://input
-			parse_str($env['inject.input'], $env['inject.post']);
+			parse_str(stream_get_contents($env['inject.input'], empty($env['CONTENT_LENGTH']) ? -1 : $env['CONTENT_LENGTH']), $env['inject.post']);
 		}
 		
 		$this->respondWith($app($env));

@@ -205,6 +205,7 @@ class Mongrel2 extends AbstractDaemon
 		$env['PATH_INFO']         = '/'.trim(substr($headers['PATH'], strlen($headers['PATTERN'])), '/');
 		$env['QUERY_STRING']      = empty($headers['QUERY']) ? '' : $headers['QUERY'];
 		$env['inject.url_scheme'] = 'http';  // TODO: Proper code
+		// TODO: Replace with a stream pointing to $msg
 		$env['inject.input']      = $msg;
 		
 		empty($env['QUERY_STRING']) OR parse_str($env['QUERY_STRING'], $env['inject.get']);
@@ -229,6 +230,7 @@ class Mongrel2 extends AbstractDaemon
 			if(stripos($env['CONTENT_TYPE'], 'application/x-www-form-urlencoded') === 0)
 			{
 				// Parse!
+				// TODO: Replace with stream reading as in the other adapters?
 				parse_str($env['inject.input'], $env['inject.post']);
 			}
 		}
