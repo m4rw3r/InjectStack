@@ -76,19 +76,26 @@ class Generic implements AdapterInterface
 		
 		header(sprintf('HTTP/1.1 %s %s', $response_code, Util::getHttpStatusText($response_code)));
 		
-		if( ! isset($headers['Content-Type']))
-		{
-			$headers['Content-Type'] = 'text/html';
-		}
-		
-		$headers['Content-Length'] = strlen($content);
-		
 		foreach($headers as $k => $v)
 		{
 			header($k.': '.$v);
 		}
 		
-		echo $content;
+		if( ! is_resource($content))
+		{
+			echo $content;
+		}
+		else
+		{
+			// Write the stream to the output stream
+			// TODO: Ability to adjust buffer size?
+			while( ! feof($content))
+			{
+				echo fread($content, 8192);
+			}
+			
+			fclose($content);
+		}
 	}
 }
 

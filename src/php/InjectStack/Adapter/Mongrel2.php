@@ -163,7 +163,7 @@ class Mongrel2 extends AbstractDaemon
 				{
 					$this->debug && print(' responding');
 					
-					$this->sendResponse($uuid, $conn_id, $this->httpResponse($response));
+					$this->httpResponse($uuid, $conn_id, $response);
 				}
 				
 				$this->debug && print("\n");
@@ -275,16 +275,14 @@ class Mongrel2 extends AbstractDaemon
 	/**
 	 * Sends a response back to the Mongrel2 server.
 	 * 
-	 * @param  string
-	 * @param  string
-	 * @param  string
+	 * @param  string  The handle UUID
+	 * @param  string  The connection id, or list of connection ids separated with spaces
+	 * @param  string  Response string
 	 * @return void
 	 */
 	public function sendResponse($uuid, $conn_id, $body)
 	{
-		$header = sprintf('%s %d:%s,', $uuid, strlen($conn_id), $conn_id);
-		
-		$this->response->send($header.' '.$body);
+		$this->response->send(sprintf('%s %d:%s,', $uuid, strlen($conn_id), $conn_id).' '.$body);
 	}
 	
 	// ------------------------------------------------------------------------
@@ -292,21 +290,16 @@ class Mongrel2 extends AbstractDaemon
 	/**
 	 * Creates a HTTP response to be sent to Mongrel2.
 	 * 
-	 * @param  array  array(response_code, array(header_title => header_content), content)
+	 * @param  string  The UUID of this handle
+	 * @param  string  The connection id, or list of connection ids separated with spaces
+	 * @param  array   array(response_code, array(header_title => header_content), content)
 	 * @return string
 	 */
-	protected function httpResponse(array $response)
+	protected function httpResponse($uuid, $conn_id, array $response)
 	{
 		$response_code = $response[0];
 		$headers = $response[1];
 		$content = $response[2];
-		
-		if( ! isset($headers['Content-Type']))
-		{
-			$headers['Content-Type'] = 'text/html';
-		}
-		
-		$headers['Content-Length'] = strlen($content);
 		
 		$head = array();
 		foreach($headers as $k => $v)
@@ -314,7 +307,27 @@ class Mongrel2 extends AbstractDaemon
 			$head[] = $k.': '.$v;
 		}
 		
-		return sprintf("HTTP/1.1 %s %s\r\n%s\r\n\r\n%s", $response_code, Util::getHttpStatusText($response_code), implode("\r\n", $head), $content);
+		// Create HTTP header
+		$head = sprintf("HTTP/1.1 %s %s\r\n%s\r\n\r\n", $response_code, Util::getHttpStatusText($response_code), implode("\r\n", $head));
+		
+		// Send body
+		if( ! is_resource($content))
+		{
+			$this->sendResponse($uuid, $conn_id, $head.$content);
+		}
+		else
+		{
+			$this->sendResponse($uuid, $conn_id, $head);
+			
+			// Send chunks to ZeroMQ
+			// TODO: Ability to adjust buffer size?
+			while( ! feof($content))
+			{
+				$this->sendResponse($uuid, $conn_id, fread($content, 8192));
+			}
+			
+			fclose($content);
+		}
 	}
 }
 

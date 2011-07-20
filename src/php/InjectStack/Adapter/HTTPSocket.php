@@ -183,7 +183,7 @@ class HTTPSocket extends AbstractDaemon
 					// Run the application!
 					if($res = $app($env))
 					{
-						fwrite($conn, $this->httpResponse($res));
+						$this->httpResponse($conn, $res);
 					}
 					
 					// Should we really do this and close the connection?
@@ -301,7 +301,7 @@ class HTTPSocket extends AbstractDaemon
 		}
 		else
 		{
-			return array(substr($remote, 0, $pos), substr($remote, $pos + 1));
+			return array(substr($remote, 0, $pos), (int)substr($remote, $pos + 1));
 		}
 	}
 	
@@ -310,23 +310,15 @@ class HTTPSocket extends AbstractDaemon
 	/**
 	 * Creates a HTTP response to be sent as the response.
 	 * 
-	 * @param  array  array(response_code, array(header_title => header_content), content)
+	 * @param  resource  The socket connection stream
+	 * @param  array     array(response_code, array(header_title => header_content), content)
 	 * @return string
 	 */
-	protected function httpResponse(array $response)
+	protected function httpResponse($conn, array $response)
 	{
-		// TODO: Merge with Mongrel2 code? This is duplicate
-		
 		$response_code = $response[0];
 		$headers = $response[1];
 		$content = $response[2];
-		
-		if( ! isset($headers['Content-Type']))
-		{
-			$headers['Content-Type'] = 'text/html';
-		}
-		
-		$headers['Content-Length'] = strlen($content);
 		
 		$head = array();
 		foreach($headers as $k => $v)
@@ -334,7 +326,25 @@ class HTTPSocket extends AbstractDaemon
 			$head[] = $k.': '.$v;
 		}
 		
-		return sprintf("HTTP/1.1 %s %s\r\n%s\r\n\r\n%s", $response_code, Util::getHttpStatusText($response_code), implode("\r\n", $head), $content);
+		// Send HTTP Response and header
+		fwrite($conn, sprintf("HTTP/1.1 %s %s\r\n%s\r\n\r\n", $response_code, Util::getHttpStatusText($response_code), implode("\r\n", $head)));
+		
+		// Send body
+		if( ! is_resource($content))
+		{
+			fwrite($conn, $content);
+		}
+		else
+		{
+			// Write the stream to the other stream
+			// TODO: Ability to adjust buffer size?
+			while( ! feof($content))
+			{
+				fwrite($conn, fread($content, 8192));
+			}
+			
+			fclose($content);
+		}
 	}
 	
 	protected function shutdownGracefully()
