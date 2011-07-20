@@ -298,6 +298,11 @@ Response Body
 The response body is a string or an object responding to ``__toString()``.
 It must be empty if the ``REQUEST_METHOD`` is ``HEAD``.
 
+It can also be a resource which can be used with ``fread()``, ``feof()``
+and ``fclose()``. In that case adapters will read from the resource using
+``fread()`` while ``feof()`` != ``false``, and when the stream reading has
+reached ``EOF`` the stream will be closed with ``fclose()``.
+
 Validating ``$env`` and the response
 ====================================
 
