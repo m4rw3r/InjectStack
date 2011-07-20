@@ -273,6 +273,7 @@ class HTTPSocket extends AbstractDaemon
 		$path = parse_url($reqline[1]);
 		
 		$env['REQUEST_METHOD'] = $reqline[0];
+		$env['REQUEST_URI']    = $reqline[1];
 		$env['PATH_INFO']      = $path['path'];
 		$env['QUERY_STRING']   = empty($path['query']) ? '' : $path['query'];
 		$env['HTTP_VERSION']   = $reqline[2];
