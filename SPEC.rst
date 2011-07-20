@@ -217,6 +217,7 @@ InjectStack's ``ServerAdapter`` s will include these keys:
 
 ``inject.input``:
     Stream containing the request body, will be closed by the adapter upon request completion.
+    By default this is stream can **not** be rewinded!
 
 .. TODO: Add more when a few middleware gets standardized, like error
    handler, session, cookie storage, file upload etc.
