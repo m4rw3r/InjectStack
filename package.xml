@@ -1,77 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package packagerversion="1.9.1" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
-    http://pear.php.net/dtd/tasks-1.0.xsd
-    http://pear.php.net/dtd/package-2.0
-    http://pear.php.net/dtd/package-2.0.xsd">
-  <name>${project.name}</name>
-  <channel>${project.channel}</channel>
-  <summary>A Rack port for PHP, making it easy to construct web applications based on a layered architecture.</summary>
-  <description>
+<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.9.1" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0     http://pear.php.net/dtd/tasks-1.0.xsd     http://pear.php.net/dtd/package-2.0     http://pear.php.net/dtd/package-2.0.xsd">
+	<name>${project.name}</name>
+	<channel>${project.channel}</channel>
+	<summary>A Rack port for PHP, making it easy to construct web applications based on a layered architecture.</summary>
+	<description>
     Description goes here
   </description>
-  <lead>
-    <name>Martin Wernståhl</name>
-    <user>m4rw3r</user>
-    <email>m4rw3r@gmail.com</email>
-    <active>yes</active>
-  </lead>
-  <date>${build.date}</date>
-  <time>${build.time}</time>
-  <version>
-  <release>${project.majorVersion}.${project.minorVersion}.${project.patchLevel}</release>
-    <api>${project.majorVersion}.${project.minorVersion}</api>
-  </version>
-  <stability>
-    <release>beta</release>
-    <api>beta</api>
-  </stability>
-  <license>All rights reserved.</license>
-  <notes>
+	<lead>
+		<name>Martin Wernståhl</name>
+		<user>m4rw3r</user>
+		<email>m4rw3r@gmail.com</email>
+		<active>yes</active>
+	</lead>
+	<date>${build.date}</date>
+	<time>${build.time}</time>
+	<version>
+		<release>${project.majorVersion}.${project.minorVersion}.${project.patchLevel}</release>
+		<api>${project.majorVersion}.${project.minorVersion}</api>
+	</version>
+	<stability>
+		<release>beta</release>
+		<api>beta</api>
+	</stability>
+	<license>New BSD License</license>
+	<notes>
     No notes.
   </notes>
-  <contents>
-    <dir baseinstalldir="/" name="/">
+	<contents>
+		<dir baseinstalldir="/" name="/">
 ${contents}
     </dir>
-  </contents>
-  <dependencies>
-    <required>
-      <php>
-        <min>5.3.0</min>
-      </php>
-      <pearinstaller>
-        <min>1.6.0</min>
-      </pearinstaller>
-      <package>
-        <name>Autoloader</name>
-        <channel>pear.gradwell.com</channel>
-        <min>2.0.0</min>
-        <max>2.999.9999</max>
-      </package>
-    </required>
-    <optional>
-      <package>
-        <name>Inject_ClassTools</name>
-        <channel>injectframework.github.com/pear</channel>
-      </package>
-    </optional>
-  </dependencies>
-  <phprelease />
-  <changelog>
-    <release>
-      <version>
-        <release>0.1.0</release>
-        <api>0.1</api>
-      </version>
-      <stability>
-        <release>beta</release>
-        <api>beta</api>
-      </stability>
-      <date>2011-04-19</date>
-      <license>All rights reserved</license>
-      <notes>
+	</contents>
+	<dependencies>
+		<required>
+			<php>
+				<min>5.3.0</min>
+			</php>
+			<pearinstaller>
+				<min>1.6.0</min>
+			</pearinstaller>
+			<package>
+				<name>Autoloader</name>
+				<channel>pear.gradwell.com</channel>
+				<min>2.0.0</min>
+				<max>2.999.9999</max>
+			</package>
+		</required>
+		<optional>
+			<package>
+				<name>Inject_ClassTools</name>
+				<channel>injectframework.github.com/pear</channel>
+			</package>
+			<package>
+				<name>zmq</name>
+				<channel>pear.zero.mq</channel>
+				<min>0.7</min>
+			</package>
+		</optional>
+	</dependencies>
+	<phprelease/>
+	<changelog>
+		<release>
+			<version>
+				<release>0.1.0</release>
+				<api>0.1</api>
+			</version>
+			<stability>
+				<release>beta</release>
+				<api>beta</api>
+			</stability>
+			<date>2011-04-19</date>
+			<license>All rights reserved</license>
+			<notes>
       </notes>
-    </release>
-  </changelog>
+		</release>
+	</changelog>
 </package>
 <!-- vim: set tabstop=2 shiftwidth=2 expandtab: -->
