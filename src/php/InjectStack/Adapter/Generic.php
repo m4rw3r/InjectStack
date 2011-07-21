@@ -17,6 +17,28 @@ use \InjectStack\Util;
 class Generic implements AdapterInterface
 {
 	/**
+	 * Buffer size in bytes for the case when streaming from a resource handle.
+	 * 
+	 * @var int
+	 */
+	protected $buffer_size = 8192;
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the buffer size for streaming from a resource handle, number of bytes.
+	 * 
+	 * @param  int
+	 * @return void
+	 */
+	public function setBufferSize($value)
+	{
+		$this->buffer_size = $value;
+	}
+	
+	// ------------------------------------------------------------------------
+	
+	/**
 	 * Runs the supplied application with values fetched from the server environment
 	 * and sends the output to the browser.
 	 * 
@@ -74,6 +96,14 @@ class Generic implements AdapterInterface
 		$headers = $response[1];
 		$content = $response[2];
 		
+		// Set Content-Length if it is missing:
+		if(empty($headers['Content-Length']) && empty($headers['Transfer-Encoding']) && ! empty($content) &&  ! is_resource($content))
+		{
+			// Plain text response, no chance that it will differ in size once a string
+			$content = (String) $content;
+			$headers['Content-Length'] = strlen($content);
+		}
+		
 		header(sprintf('HTTP/1.1 %s %s', $response_code, Util::getHttpStatusText($response_code)));
 		
 		foreach($headers as $k => $v)
@@ -88,10 +118,10 @@ class Generic implements AdapterInterface
 		else
 		{
 			// Write the stream to the output stream
-			// TODO: Ability to adjust buffer size?
+			// We assume that the server does chunked encoding if needed
 			while( ! feof($content))
 			{
-				echo fread($content, 8192);
+				echo fread($content, $this->buffer_size);
 			}
 			
 			fclose($content);

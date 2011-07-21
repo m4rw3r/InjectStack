@@ -74,6 +74,13 @@ class HTTPSocket extends AbstractDaemon
 	 */
 	protected $socket_timeout = 3600;
 	
+	/**
+	 * Buffer size in bytes for the case when streaming from a resource handle.
+	 * 
+	 * @var int
+	 */
+	protected $buffer_size = 8192;
+	
 	// ------------------------------------------------------------------------
 
 	/**
@@ -100,6 +107,19 @@ class HTTPSocket extends AbstractDaemon
 		), $default_env);
 		
 		empty($allowed_methods) OR $this->allowed_methods = $allowed_methods;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the buffer size for streaming from a resource handle, number of bytes.
+	 * 
+	 * @param  int
+	 * @return void
+	 */
+	public function setBufferSize($value)
+	{
+		$this->buffer_size = $value;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -140,19 +160,16 @@ class HTTPSocket extends AbstractDaemon
 		{
 			try
 			{
-				while($str = stream_get_line($conn, 4128, "\r\n\r\n"))
+				// This loop is for the cases when we only get a partial header, then stream_get_line() returns false
+				while(($str = stream_get_line($conn, 4128, "\r\n\r\n")) === false)
 				{
-					$env = $this->parseRequestHeader($str);
-					
-					if(is_numeric($env))
-					{
-						// We have an error from parsing the request:
-						fwrite($conn, "HTTP/1.1 $env ".Util::getHttpStatusText($env)."\r\nContent-Length: 0\r\n\r\n");
-						// TODO: Add content message?
-						
-						break;
-					}
-					
+					// Empty
+				}
+				
+				$env = $this->parseRequestHeader($str);
+				
+				if( ! is_numeric($env))
+				{
 					$env['inject.input'] = $conn;
 					
 					list($env['REMOTE_ADDR'], $env['REMOTE_PORT']) = $this->getRemote($conn);
@@ -185,9 +202,12 @@ class HTTPSocket extends AbstractDaemon
 					{
 						$this->httpResponse($conn, $res);
 					}
-					
-					// Should we really do this and close the connection?
-					break;
+				}
+				else
+				{
+					// We have an error from parsing the request:
+					fwrite($conn, "HTTP/1.1 $env ".Util::getHttpStatusText($env)."\r\nContent-Length: 0\r\n\r\n");
+					// TODO: Add content message?
 				}
 			}
 			catch(Exception $e)
@@ -316,9 +336,30 @@ class HTTPSocket extends AbstractDaemon
 	 */
 	protected function httpResponse($conn, array $response)
 	{
+		// If to use the chunked encoding
+		$use_chunked = false;
+		
+		// Split the return array:
 		$response_code = $response[0];
 		$headers = $response[1];
 		$content = $response[2];
+		
+		// Set Content-Length if it is missing:
+		if(empty($headers['Content-Length']) && empty($headers['Transfer-Encoding']) && ! empty($content))
+		{
+			if( ! is_resource($content))
+			{
+				// Plain text response, no chance that it will differ in size once a string
+				$content = (String) $content;
+				$headers['Content-Length'] = strlen($content);
+			}
+			else
+			{
+				// Resources can be pretty strange, use chunked transfer encoding
+				$use_chunked = true;
+				$headers['Transfer-Encoding'] = 'chunked';
+			}
+		}
 		
 		$head = array();
 		foreach($headers as $k => $v)
@@ -337,15 +378,31 @@ class HTTPSocket extends AbstractDaemon
 		else
 		{
 			// Write the stream to the other stream
-			// TODO: Ability to adjust buffer size?
-			while( ! feof($content))
+			if($use_chunked)
 			{
-				fwrite($conn, fread($content, 8192));
+				// Chunked encoding
+				while( ! feof($content))
+				{
+					$data = fread($content, $this->buffer_size);
+					fwrite($conn, sprintf('%X', strlen($data))."\r\n".$data."\r\n");
+				}
+				
+				// Terminate
+				fwrite($conn, "0\r\n\r\n");
+			}
+			else
+			{
+				while( ! feof($content))
+				{
+					fwrite($conn, fread($content, $this->buffer_size));
+				}
 			}
 			
 			fclose($content);
 		}
 	}
+	
+	// ------------------------------------------------------------------------
 	
 	protected function shutdownGracefully()
 	{

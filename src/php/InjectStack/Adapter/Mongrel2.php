@@ -81,6 +81,13 @@ class Mongrel2 extends AbstractDaemon
 	protected $do_run = true;
 	
 	/**
+	 * Buffer size in bytes for the case when streaming from a resource handle.
+	 * 
+	 * @var int
+	 */
+	protected $buffer_size = 8192;
+	
+	/**
 	 * @param  string
 	 * @param  string
 	 * @param  string
@@ -105,6 +112,19 @@ class Mongrel2 extends AbstractDaemon
 			'inject.get'     => array(),
 			'inject.post'    => array()
 		), $default_env);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the buffer size for streaming from a resource handle, number of bytes.
+	 * 
+	 * @param  int
+	 * @return void
+	 */
+	public function setBufferSize($value)
+	{
+		$this->buffer_size = $value;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -297,9 +317,30 @@ class Mongrel2 extends AbstractDaemon
 	 */
 	protected function httpResponse($uuid, $conn_id, array $response)
 	{
+		// If to use the chunked encoding
+		$use_chunked = false;
+		
+		// Split the return array:
 		$response_code = $response[0];
 		$headers = $response[1];
 		$content = $response[2];
+		
+		// Set Content-Length if it is missing:
+		if(empty($headers['Content-Length']) && empty($headers['Transfer-Encoding']) && ! empty($content))
+		{
+			if( ! is_resource($content))
+			{
+				// Plain text response, no chance that it will differ in size once a string
+				$content = (String) $content;
+				$headers['Content-Length'] = strlen($content);
+			}
+			else
+			{
+				// Resources can be pretty strange, use chunked transfer encoding
+				$use_chunked = true;
+				$headers['Transfer-Encoding'] = 'chunked';
+			}
+		}
 		
 		$head = array();
 		foreach($headers as $k => $v)
@@ -319,11 +360,25 @@ class Mongrel2 extends AbstractDaemon
 		{
 			$this->sendResponse($uuid, $conn_id, $head);
 			
-			// Send chunks to ZeroMQ
-			// TODO: Ability to adjust buffer size?
-			while( ! feof($content))
+			// Write the stream to the other stream
+			if($use_chunked)
 			{
-				$this->sendResponse($uuid, $conn_id, fread($content, 8192));
+				// Chunked encoding
+				while( ! feof($content))
+				{
+					$data = fread($content, $this->buffer_size);
+					$this->sendResponse($uuid, $conn_id, sprintf('%X', strlen($data))."\r\n".$data."\r\n");
+				}
+				
+				// Terminate
+				$this->sendResponse($uuid, $conn_id,  "0\r\n\r\n");
+			}
+			else
+			{
+				while( ! feof($content))
+				{
+					$this->sendResponse($uuid, $conn_id, fread($content, $this->buffer_size));
+				}
 			}
 			
 			fclose($content);
