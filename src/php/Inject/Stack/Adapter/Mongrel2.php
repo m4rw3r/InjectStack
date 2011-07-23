@@ -219,7 +219,7 @@ class Mongrel2 extends AbstractDaemon
 		$env = $this->default_env;
 		
 		$env['REMOTE_ADDR']       = $headers['x-forwarded-for'];
-		$env['REQUEST_METHOD']    = $headers['METHOD'];
+		$env['REQUEST_METHOD']    = strtoupper($headers['METHOD']);
 		$env['REQUEST_URI']       = $headers['URI'];
 		$env['SCRIPT_NAME']       = $headers['PATTERN'] == '/' ? '' : $headers['PATTERN'];
 		$env['PATH_INFO']         = '/'.trim(substr($headers['PATH'], strlen($headers['PATTERN'])), '/');

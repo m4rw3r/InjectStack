@@ -253,11 +253,17 @@ class HTTPSocket extends AbstractDaemon
 			return 400;
 		}
 		
+		// Method is case-insensitive
+		$reqline[0] = strtoupper($reqline[0]);
+		
 		if( ! in_array($reqline[0], $this->allowed_methods))
 		{
 			// Not allowed method
 			return 501;
 		}
+		
+		// HTTP version is also case-insensitive
+		$reqline[2] = strtoupper($reqline[2]);
 		
 		if($reqline[2] !== 'HTTP/1.1')
 		{
