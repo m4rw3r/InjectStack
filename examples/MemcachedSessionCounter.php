@@ -7,9 +7,9 @@ use \Memcached;
 use \Inject\ClassTools\Autoloader\Generic as Autoloader;
 
 // Include classes we're going to use and the Middleware namespace
-use \InjectStack\Builder;
-use \InjectStack\Middleware;
-use \InjectStack\Adapter\Generic as ServerAdapter;
+use \Inject\Stack\Builder;
+use \Inject\Stack\Middleware;
+use \Inject\Stack\Adapter\Generic as ServerAdapter;
 
 // Set include path for the autoloader, so we can load stuff even if we haven't been installed by PEAR
 set_include_path(realpath(__DIR__.'/../src/php').PATH_SEPARATOR.get_include_path());

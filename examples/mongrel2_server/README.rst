@@ -2,12 +2,12 @@
 Mongrel2 Server example
 =======================
 
-This is a very simple example. And the ``\InjectStack\Adapter\Mongrel2``
+This is a very simple example. And the ``\Inject\Stack\Adapter\Mongrel2``
 class is not yet finished, it is still missing stuff like Multipart and
 cookie parsing.
 
-Running Mongrel and InjectStack
-===============================
+Running Mongrel and Inject\Stack
+================================
 
 ::
   
@@ -20,7 +20,7 @@ Running Mongrel and InjectStack
 Then open your favourite browser and browse to
 ``http://localhost:6767/<example_name>``.
 
-To stop Mongrel2 and InjectStack::
+To stop Mongrel2 and Inject\Stack::
 
   [Ctrl-C]
   cd deployment
@@ -41,7 +41,7 @@ This application counts the number of requests received for a certain
 URI. The application can be reached at ``http://localhost:6767/counter``.
 
 
-Running InjectStack with Mongrel and XDebug profiler
+Running Inject\Stack with Mongrel and XDebug profiler
 ====================================================
 
 ::

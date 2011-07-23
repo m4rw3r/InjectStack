@@ -3,7 +3,7 @@
 
 // ## Class loading ##
 
-// We need a PSR-0 compliant autoloader to load InjectStack,
+// We need a PSR-0 compliant autoloader to load Inject\Stack,
 use \Inject\ClassTools\Autoloader\Generic as Autoloader;
 
 // Add the project's source dir to the include path, in case we haven't been installed locally
@@ -18,7 +18,7 @@ $loader->register();
 // ## Hello World Example ##
 
 // Instantiate the server adapter
-$adapter = new \InjectStack\Adapter\HTTPSocket(array('SERVER_PORT' => 8080));
+$adapter = new \Inject\Stack\Adapter\HTTPSocket(array('SERVER_PORT' => 8080));
 
 // Per-thread application init function:
 $app_init = function()

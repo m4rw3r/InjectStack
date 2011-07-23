@@ -23,7 +23,7 @@ $app = function($env)
 
 // Create a new Mongrel2 adapter with supplied UUID and connections,
 // other config options are default, except debug = true
-$adapter = new \InjectStack\Adapter\Mongrel2(
+$adapter = new \Inject\Stack\Adapter\Mongrel2(
 	'B2D9FFB2-4DF9-4430-8E07-93F342009FE9',
 	'tcp://127.0.0.1:9989',
 	'tcp://127.0.0.1:9988',

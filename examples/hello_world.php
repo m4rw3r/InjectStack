@@ -3,11 +3,11 @@
 
 // ## Class loading ##
 
-// We need a PSR-0 compliant autoloader to load InjectStack,
+// We need a PSR-0 compliant autoloader to load Inject\Stack,
 use \Inject\ClassTools\Autoloader\Generic as Autoloader;
 
 // and an adapter to interact with the web server
-use \InjectStack\Adapter\Generic as ServerAdapter;
+use \Inject\Stack\Adapter\Generic as ServerAdapter;
 
 // Add the project's source dir to the include path, in case we haven't been installed locally
 set_include_path('../src/php'.PATH_SEPARATOR.get_include_path());
