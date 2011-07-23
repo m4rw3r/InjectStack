@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 /**
  * An object which creates a stack of middleware for dealing with requests, middleware can modify the
@@ -19,7 +19,7 @@ namespace InjectStack;
 class Builder
 {
 	/**
-	 * Version constant for InjectStack, compatible with version_compare().
+	 * Version constant for Inject\Stack, compatible with version_compare().
 	 * 
 	 * @var string
 	 */
@@ -35,7 +35,7 @@ class Builder
 	/**
 	 * The middleware to call before calling the endpoint.
 	 * 
-	 * @var array(\InjectStack\MiddlewareInterface)
+	 * @var array(\Inject\Stack\MiddlewareInterface)
 	 */
 	protected $middleware = array();
 	
@@ -44,7 +44,7 @@ class Builder
 	/**
 	 * Creates a new Builder with the supplied middleware and endpoint.
 	 * 
-	 * @param  array(\InjectStack\MiddlewareInterface)
+	 * @param  array(\Inject\Stack\MiddlewareInterface)
 	 * @param  Closure|ObjectImplementing__invoke
 	 */
 	public function __construct(array $middleware = array(), $endpoint = null)
@@ -135,4 +135,4 @@ class Builder
 
 
 /* End of file Builder.php */
-/* Location: src/php/InjectStack */
+/* Location: src/php/Inject/Stack */

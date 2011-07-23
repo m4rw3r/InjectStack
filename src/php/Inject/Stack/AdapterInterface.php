@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 /**
  * Interface for framework adapters, a framework adapter is responsible for
@@ -20,7 +20,7 @@ interface AdapterInterface
 	 * The Adapter will also handle outputting of the return value from the stack
 	 * in an appropriate way.
 	 * 
-	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
+	 * @param  \Inject\Stack\Builder|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
 	public function run($app);
@@ -28,4 +28,4 @@ interface AdapterInterface
 
 
 /* End of file AdapterInterface.php */
-/* Location: src/php/InjectStack */
+/* Location: src/php/Inject/Stack */

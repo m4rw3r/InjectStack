@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 /**
  * Interface for Middlewares, these can do pre or post processing etc. in
@@ -32,4 +32,4 @@ interface MiddlewareInterface
 
 
 /* End of file MiddlewareInterface.php */
-/* Location: src/php/InjectStack */
+/* Location: src/php/Inject/Stack */

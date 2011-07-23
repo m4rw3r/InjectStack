@@ -5,22 +5,22 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware\Session;
+namespace Inject\Stack\Middleware\Session;
 
 use \ArrayObject;
 
-use \InjectStack\Middleware\Session;
+use \Inject\Stack\Middleware\Session;
 
 /**
  * Object containing session data, the populating and persisting of
- * this object is handled by the \InjectStack\Middleware\Session middleware.
+ * this object is handled by the \Inject\Stack\Middleware\Session middleware.
  */
 class Bucket extends ArrayObject
 {
 	/**
 	 * Storage instance managing the data of this object.
 	 * 
-	 * @var \InjectStack\Middleware\Session\StorageInterface
+	 * @var \Inject\Stack\Middleware\Session\StorageInterface
 	 */
 	protected $session;
 	
@@ -48,7 +48,7 @@ class Bucket extends ArrayObject
 	// ------------------------------------------------------------------------
 
 	/**
-	 * @param  \InjectStack\Middleware\Session
+	 * @param  \Inject\Stack\Middleware\Session
 	 * @param  string
 	 * @param  array
 	 */
@@ -152,4 +152,4 @@ class Bucket extends ArrayObject
 
 
 /* End of file Bucket.php */
-/* Location: src/php/InjectStack/Middleware/Session */
+/* Location: src/php/Inject/Stack/Middleware/Session */

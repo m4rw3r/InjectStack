@@ -5,12 +5,12 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
-use \InjectStack\MiddlewareInterface;
+use \Inject\Stack\MiddlewareInterface;
 
 /**
- * Middleware which invalidates sessions created by \InjectStack\Middleware\Session
+ * Middleware which invalidates sessions created by \Inject\Stack\Middleware\Session
  * if they for example change user agent, or if they time out etc.
  * 
  * Options:
@@ -36,7 +36,7 @@ class SessionInvalidator implements MiddlewareInterface
 	 * The callback for the next middleware or the endpoint in this middleware
 	 * stack.
 	 * 
-	 * @var \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @var \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	protected $next;
 	
@@ -76,7 +76,7 @@ class SessionInvalidator implements MiddlewareInterface
 	 * Tells this middleware which middleware or endpoint it should call if it
 	 * wants the call-chain to proceed.
 	 * 
-	 * @param  \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @param  \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	public function setNext($next)
 	{
@@ -160,4 +160,4 @@ class SessionInvalidator implements MiddlewareInterface
 
 
 /* End of file SessionInvalidator.php */
-/* Location: src/php/InjectStack/Middleware */
+/* Location: src/php/Inject/Stack/Middleware */

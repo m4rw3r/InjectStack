@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 use ArrayObject;
 
@@ -369,4 +369,4 @@ class Request extends ArrayObject
 
 
 /* End of file Request.php */
-/* Location: src/php/InjectStack */
+/* Location: src/php/Inject/Stack */

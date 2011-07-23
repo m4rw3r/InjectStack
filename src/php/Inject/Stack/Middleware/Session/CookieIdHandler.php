@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware\Session;
+namespace Inject\Stack\Middleware\Session;
 
 /**
  * 
@@ -107,4 +107,4 @@ class CookieIdHandler implements IdHandlerInterface
 
 
 /* End of file CookieIdHandler.php */
-/* Location: src/php/InjectStack/Middleware/Session */
+/* Location: src/php/Inject/Stack/Middleware/Session */

@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware\Session;
+namespace Inject\Stack\Middleware\Session;
 
 /**
  * 
@@ -95,4 +95,4 @@ class Mongrel2CookieIdHandler implements IdHandlerInterface
 
 
 /* End of file IdHandlerInterface.php */
-/* Location: src/php/InjectStack/Middleware/Session */
+/* Location: src/php/Inject/Stack/Middleware/Session */

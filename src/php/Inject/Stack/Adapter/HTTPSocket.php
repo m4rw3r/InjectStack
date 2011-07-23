@@ -5,10 +5,10 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Adapter;
+namespace Inject\Stack\Adapter;
 
 use \Exception;
-use \InjectStack\Util;
+use \Inject\Stack\Util;
 
 /**
  * Class which acts as a HTTP server directly in PHP.
@@ -23,7 +23,7 @@ use \InjectStack\Util;
  *     'SERVER_PORT'       => 80,
  *     'BASE_URI'          => '',
  *     'SCRIPT_NAME'       => '',
- *     'inject.version'    => \InjectStack\Builder::VERSION,
+ *     'inject.version'    => \Inject\Stack\Builder::VERSION,
  *     'inject.adapter'    => get_called_class(),
  *     'inject.get'        => array(),
  *     'inject.post'       => array(),
@@ -99,7 +99,7 @@ class HTTPSocket extends AbstractDaemon
 			'SERVER_PORT'       => 80,
 			'BASE_URI'          => '',
 			'SCRIPT_NAME'       => '',
-			'inject.version'    => \InjectStack\Builder::VERSION,
+			'inject.version'    => \Inject\Stack\Builder::VERSION,
 			'inject.adapter'    => get_called_class(),
 			'inject.get'        => array(),
 			'inject.post'       => array(),
@@ -226,7 +226,7 @@ class HTTPSocket extends AbstractDaemon
 	/**
 	 * Parses the request header and populates a clone of the $default_env.
 	 * 
-	 * Does not completely follow InjectStack SPEC:
+	 * Does not completely follow Inject\Stack SPEC:
 	 * * Missing renames of HTTP_CONTENT_TYPE and HTTP_CONTENT_LENGTH
 	 * * Missing Query-string and POST-data parsing
 	 * * Missing REMOTE_ADDR assignment
@@ -412,4 +412,4 @@ class HTTPSocket extends AbstractDaemon
 
 
 /* End of file HTTPSocket.php */
-/* Location: src/php/InjectStack/Adapter */
+/* Location: src/php/Inject/Stack/Adapter */

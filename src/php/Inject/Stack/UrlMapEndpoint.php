@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 /**
  * Endpoint which performs string matching against segments of $env['PATH_INFO']
@@ -114,4 +114,4 @@ class UrlMapEndpoint
 
 
 /* End of file UrlMapEndpoint.php */
-/* Location: src/php/InjectStack */
+/* Location: src/php/Inject/Stack */

@@ -5,12 +5,12 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
 use \SimpleXMLElement;
 
-use \InjectStack\Request;
-use \InjectStack\MiddlewareInterface;
+use \Inject\Stack\Request;
+use \Inject\Stack\MiddlewareInterface;
 
 /**
  * Takes any thrown exception and prints the exception and stack trace,
@@ -22,7 +22,7 @@ class ShowException implements MiddlewareInterface
 	 * The callback for the next middleware or the endpoint in this middleware
 	 * stack.
 	 * 
-	 * @var \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @var \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	protected $next;
 	
@@ -32,7 +32,7 @@ class ShowException implements MiddlewareInterface
 	 * Tells this middleware which middleware or endpoint it should call if it
 	 * wants the call-chain to proceed.
 	 * 
-	 * @param  \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @param  \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	public function setNext($next)
 	{
@@ -378,4 +378,4 @@ class ShowException implements MiddlewareInterface
 
 
 /* End of file Failsafe.php */
-/* Location: src/php/InjectStack/Middleware */
+/* Location: src/php/Inject/Stack/Middleware */

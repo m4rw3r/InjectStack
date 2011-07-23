@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
 /**
  * Filters $env and strips all non-UTF-8 characters from its strings, prevents
@@ -16,7 +16,7 @@ class Utf8Filter implements MiddlewareInterface
 	/**
 	 * The callback for the next middleware or the endpoint.
 	 * 
-	 * @var \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @var \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	protected $next;
 	
@@ -26,7 +26,7 @@ class Utf8Filter implements MiddlewareInterface
 	 * Tells this middleware which middleware or endpoint it should call if it
 	 * wants the call-chain to proceed.
 	 * 
-	 * @param  \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @param  \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	public function setNext($next)
 	{
@@ -130,4 +130,4 @@ class Utf8Filter implements MiddlewareInterface
 
 
 /* End of file Utf8Filter.php */
-/* Location: src/php/InjectStack/Middleware */
+/* Location: src/php/Inject/Stack/Middleware */

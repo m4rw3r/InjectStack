@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
 class LintException extends \RuntimeException
 {
@@ -17,4 +17,4 @@ class LintException extends \RuntimeException
 }
 
 /* End of file LintException.php */
-/* Location: src/php/InjectStack/Middleware */
+/* Location: src/php/Inject/Stack/Middleware */

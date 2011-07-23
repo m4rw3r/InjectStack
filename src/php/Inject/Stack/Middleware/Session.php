@@ -5,13 +5,13 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
-use \InjectStack\MiddlewareInterface;
+use \Inject\Stack\MiddlewareInterface;
 
-use \InjectStack\Middleware\Session\Bucket;
-use \InjectStack\Middleware\Session\StorageInterface;
-use \InjectStack\Middleware\Session\IdHandlerInterface;
+use \Inject\Stack\Middleware\Session\Bucket;
+use \Inject\Stack\Middleware\Session\StorageInterface;
+use \Inject\Stack\Middleware\Session\IdHandlerInterface;
 
 /**
  * 
@@ -22,21 +22,21 @@ class Session implements MiddlewareInterface
 	 * The callback for the next middleware or the endpoint in this middleware
 	 * stack.
 	 * 
-	 * @var \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @var \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	protected $next;
 	
 	/**
 	 * Session storage adapter.
 	 * 
-	 * @var \InjectStack\Middleware\Session\StorageInterface
+	 * @var \Inject\Stack\Middleware\Session\StorageInterface
 	 */
 	protected $storage;
 	
 	/**
 	 * The object fetching and storing the ID for the client.
 	 * 
-	 * @var \InjectStack\Middleware\Session\IdHandlerInterface
+	 * @var \Inject\Stack\Middleware\Session\IdHandlerInterface
 	 */
 	protected $id_handler;
 	
@@ -64,7 +64,7 @@ class Session implements MiddlewareInterface
 	 * Tells this middleware which middleware or endpoint it should call if it
 	 * wants the call-chain to proceed.
 	 * 
-	 * @param  \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @param  \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	public function setNext($next)
 	{
@@ -128,7 +128,7 @@ class Session implements MiddlewareInterface
 	 * Tells the storage to remove the data associated with the supplied session
 	 * bucket and gives it a new id.
 	 * 
-	 * @param  \InjectStack\Middleware\Session\Bucket
+	 * @param  \Inject\Stack\Middleware\Session\Bucket
 	 * @return void
 	 */
 	public function invalidateSession(Bucket $data)
@@ -143,7 +143,7 @@ class Session implements MiddlewareInterface
 	/**
 	 * Destroys the session the supplied bucket represents.
 	 * 
-	 * @param  \InjectStack\Middleware\Session\Bucket
+	 * @param  \Inject\Stack\Middleware\Session\Bucket
 	 * @return void
 	 */
 	public function destroySession(Bucket $data)
@@ -168,4 +168,4 @@ class Session implements MiddlewareInterface
 
 
 /* End of file Session.php */
-/* Location: src/php/InjectStack/Middleware */
+/* Location: src/php/Inject/Stack/Middleware */

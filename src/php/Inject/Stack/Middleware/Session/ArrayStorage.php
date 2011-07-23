@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware\Session;
+namespace Inject\Stack\Middleware\Session;
 
 /**
  * Array storage, for use with Mongrel2 application server process,
@@ -109,4 +109,4 @@ class ArrayStorage implements StorageInterface
 
 
 /* End of file SessionInterface.php */
-/* Location: src/php/InjectStack/Middleware/Session */
+/* Location: src/php/Inject/Stack/Middleware/Session */

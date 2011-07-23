@@ -5,11 +5,11 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Adapter;
+namespace Inject\Stack\Adapter;
 
 use \Closure;
 use \Exception;
-use \InjectStack\AdapterInterface;
+use \Inject\Stack\AdapterInterface;
 
 /**
  * Base class for adapters which should be able to spawn worker processes to serve requests.
@@ -34,7 +34,7 @@ use \InjectStack\AdapterInterface;
  * };
  * 
  * // Replace this row with whatever daemon adapter you use:
- * $adapter = new \InjectStack\Adapter\FooDaemon();
+ * $adapter = new \Inject\Stack\Adapter\FooDaemon();
  * 
  * // Spawn 4 worker processes
  * $adapter->serve($app_init, 4);
@@ -225,4 +225,4 @@ abstract class AbstractDaemon implements AdapterInterface
 
 
 /* End of file AbstractDaemon.php */
-/* Location: src/php/InjectStack/Adapter */
+/* Location: src/php/Inject/Stack/Adapter */

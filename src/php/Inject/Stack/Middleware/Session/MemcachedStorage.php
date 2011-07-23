@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware\Session;
+namespace Inject\Stack\Middleware\Session;
 
 use \Memcached;
 
@@ -22,10 +22,10 @@ use \Memcached;
  * $memcached = new \Memcached();
  * $memcached->addServer('127.0.0.1', 11211);  // localhost and default port
  * 
- * $storage = new \InjectStack\Middleware\Session\MemcachedStorage($memcached);
- * $idhandl = new \InjectStack\Middleware\Session\CookieIdHandler();
+ * $storage = new \Inject\Stack\Middleware\Session\MemcachedStorage($memcached);
+ * $idhandl = new \Inject\Stack\Middleware\Session\CookieIdHandler();
  * 
- * $session = new \InjectStack\Middleware\Session($storage, $idhandl);
+ * $session = new \Inject\Stack\Middleware\Session($storage, $idhandl);
  * </code>
  */
 class MemcachedStorage implements StorageInterface
@@ -145,4 +145,4 @@ class MemcachedStorage implements StorageInterface
 
 
 /* End of file SessionInterface.php */
-/* Location: src/php/InjectStack/Middleware/Session */
+/* Location: src/php/Inject/Stack/Middleware/Session */

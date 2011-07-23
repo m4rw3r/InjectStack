@@ -5,12 +5,12 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Adapter;
+namespace Inject\Stack\Adapter;
 
 use \ZMQ;
 use \ZMQContext;
 use \ZMQException;
-use \InjectStack\Util;
+use \Inject\Stack\Util;
 
 /**
  * Acts as an adapter between the Mongrel2 server and the application stack.
@@ -107,7 +107,7 @@ class Mongrel2 extends AbstractDaemon
 			'SERVER_NAME'    => 'localhost',
 			'SERVER_PORT'    => 80,
 			'BASE_URI'       => '',
-			'inject.version' => \InjectStack\Builder::VERSION,
+			'inject.version' => \Inject\Stack\Builder::VERSION,
 			'inject.adapter' => get_called_class(),
 			'inject.get'     => array(),
 			'inject.post'    => array()
@@ -138,12 +138,12 @@ class Mongrel2 extends AbstractDaemon
 	 * 
 	 * NOTE:
 	 * 
-	 * If you use a \InjectStack\Builder instance, it is recommended to pass
-	 * the value from \InjectStack\Builder->build() instead of the Builder
+	 * If you use a \Inject\Stack\Builder instance, it is recommended to pass
+	 * the value from \Inject\Stack\Builder->build() instead of the Builder
 	 * instance itself. This will avoid the rebuilding of the stack for each
 	 * request.
 	 * 
-	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
+	 * @param  \Inject\Stack\Builder|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
 	public function run($app)
@@ -388,4 +388,4 @@ class Mongrel2 extends AbstractDaemon
 
 
 /* End of file Mongrel2.php */
-/* Location: src/php/InjectStack/Adapter */
+/* Location: src/php/Inject/Stack/Adapter */

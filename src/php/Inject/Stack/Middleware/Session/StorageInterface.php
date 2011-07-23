@@ -5,9 +5,9 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware\Session;
+namespace Inject\Stack\Middleware\Session;
 
-use \InjectStack\Middleware\Session;
+use \Inject\Stack\Middleware\Session;
 
 /**
  * 
@@ -49,4 +49,4 @@ interface StorageInterface
 
 
 /* End of file SessionInterface.php */
-/* Location: src/php/InjectStack/Middleware/Session */
+/* Location: src/php/Inject/Stack/Middleware/Session */

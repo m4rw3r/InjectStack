@@ -5,10 +5,10 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Mock;
+namespace Inject\Stack\Mock;
 
-use InjectStack\Builder;
-use InjectStack\Middleware\Lint;
+use Inject\Stack\Builder;
+use Inject\Stack\Middleware\Lint;
 
 class MockRequest
 {
@@ -22,7 +22,7 @@ class MockRequest
 	// ------------------------------------------------------------------------
 
 	/**
-	 * @param  Closure|ObjectImplementing__invoke  InjectStack application to run.
+	 * @param  Closure|ObjectImplementing__invoke  Inject\Stack application to run.
 	 */
 	public function __construct($app)
 	{
@@ -168,4 +168,4 @@ class MockRequest
 
 
 /* End of file MockRequest.php */
-/* Location: src/php/InjectStack/Mock */
+/* Location: src/php/Inject/Stack/Mock */

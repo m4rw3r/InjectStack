@@ -5,10 +5,10 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Adapter;
+namespace Inject\Stack\Adapter;
 
-use \InjectStack\AdapterInterface;
-use \InjectStack\Util;
+use \Inject\Stack\AdapterInterface;
+use \Inject\Stack\Util;
 
 /**
  * Acts as an adapter between the server and the application stack, presumes MODPHP
@@ -42,14 +42,14 @@ class Generic implements AdapterInterface
 	 * Runs the supplied application with values fetched from the server environment
 	 * and sends the output to the browser.
 	 * 
-	 * @param  \InjectStack\Builder|Closure|ObjectImplementing__invoke
+	 * @param  \Inject\Stack\Builder|Closure|ObjectImplementing__invoke
 	 * @return void
 	 */
 	public function run($app)
 	{
 		$env = $_SERVER;
 		
-		$env['inject.version']    = \InjectStack\Builder::VERSION;
+		$env['inject.version']    = \Inject\Stack\Builder::VERSION;
 		$env['inject.adapter']    = get_called_class();
 		$env['inject.url_scheme'] = (( ! empty($env['HTTPS'])) && $env['HTTPS'] != 'off') ? 'https' : 'http';
 		// No need to close this stream, PHP automatically closes when this process reloads
@@ -131,4 +131,4 @@ class Generic implements AdapterInterface
 
 
 /* End of file Generic.php */
-/* Location: src/php/InjectStack/Adapter */
+/* Location: src/php/Inject/Stack/Adapter */

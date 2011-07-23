@@ -5,14 +5,14 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
 use \ArrayAccess;
 use \Countable;
 use \Iterator;
 use \IteratorAggregate;
 
-use \InjectStack\MiddlewareInterface;
+use \Inject\Stack\MiddlewareInterface;
 
 /**
  * Middleware performing checks on $env and return value to see that they conform
@@ -34,7 +34,7 @@ class Lint implements MiddlewareInterface
 	 * The callback for the next middleware or the endpoint in this middleware
 	 * stack.
 	 * 
-	 * @var \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @var \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	protected $next;
 	
@@ -51,7 +51,7 @@ class Lint implements MiddlewareInterface
 	 * Tells this middleware which middleware or endpoint it should call if it
 	 * wants the call-chain to proceed.
 	 * 
-	 * @param  \InjectStack\MiddlewareInterface|Closure|ObjectImplementing__invoke
+	 * @param  \Inject\Stack\MiddlewareInterface|Closure|ObjectImplementing__invoke
 	 */
 	public function setNext($next)
 	{
@@ -342,4 +342,4 @@ class Lint implements MiddlewareInterface
 
 
 /* End of file RunTimer.php */
-/* Location: src/php/InjectStack/Middleware */
+/* Location: src/php/Inject/Stack/Middleware */

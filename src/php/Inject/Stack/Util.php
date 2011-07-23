@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 /**
  * 
@@ -128,4 +128,4 @@ class Util
 
 
 /* End of file Util.php */
-/* Location: src/php/InjectStack */
+/* Location: src/php/Inject/Stack */

@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 /**
  * Endpoint which attempts to call several apps and returns the response of the
@@ -66,4 +66,4 @@ class CascadeEndpoint
 
 
 /* End of file CascadeEndpoint.php */
-/* Location: src/php/InjectStack */
+/* Location: src/php/Inject/Stack */
