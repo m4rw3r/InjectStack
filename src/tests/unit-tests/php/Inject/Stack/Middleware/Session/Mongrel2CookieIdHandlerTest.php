@@ -5,10 +5,10 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware\Session;
+namespace Inject\Stack\Middleware\Session;
 
 /**
- * @covers InjectStack\Middleware\Session\Mongrel2CookieIdHandler
+ * @covers Inject\Stack\Middleware\Session\Mongrel2CookieIdHandler
  */
 class Mongrel2CookieIdHandlerTest extends \PHPUnit_Framework_TestCase
 {
@@ -102,4 +102,4 @@ class Mongrel2CookieIdHandlerTest extends \PHPUnit_Framework_TestCase
 
 
 /* End of file BucketTest.php */
-/* Location: src/tests/unit-tests/php/InjectStack/Middleware/Session */
+/* Location: src/tests/unit-tests/php/Inject/Stack/Middleware/Session */

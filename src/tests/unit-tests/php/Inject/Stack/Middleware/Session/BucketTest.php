@@ -5,19 +5,19 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware\Session;
+namespace Inject\Stack\Middleware\Session;
 
 use \stdClass;
 use \ArrayObject;
 
 /**
- * @covers InjectStack\Middleware\Session\Bucket
+ * @covers Inject\Stack\Middleware\Session\Bucket
  */
 class BucketTest extends \PHPUnit_Framework_TestCase
 {
 	protected function getSessionMock()
 	{
-		return $this->getMock('InjectStack\\Middleware\\Session', array(), array(), '', false);
+		return $this->getMock('Inject\\Stack\\Middleware\\Session', array(), array(), '', false);
 	}
 	
 	public function testInstantiate()
@@ -105,7 +105,7 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 		$mock = $this->getSessionMock();
 		
 		$mock->expects($this->once())->method('invalidateSession')
-			->with($this->isInstanceOf('InjectStack\\Middleware\\Session\\Bucket'));
+			->with($this->isInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket'));
 		
 		$obj = new Bucket($mock, 'yw3ry', array('test' => 'lol'));
 		
@@ -118,7 +118,7 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 		$mock = $this->getSessionMock();
 		
 		$mock->expects($this->once())->method('invalidateSession')
-			->with($this->isInstanceOf('InjectStack\\Middleware\\Session\\Bucket'));
+			->with($this->isInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket'));
 		
 		$obj = new Bucket($mock, 'yw3ry', array('test' => 'lol'));
 		
@@ -131,7 +131,7 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 		$mock = $this->getSessionMock();
 		
 		$mock->expects($this->once())->method('invalidateSession')
-			->with($this->isInstanceOf('InjectStack\\Middleware\\Session\\Bucket'));
+			->with($this->isInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket'));
 		
 		$obj = new Bucket($mock, 'yw3ry', array('test' => 'lol'));
 		
@@ -146,7 +146,7 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 		$obj = new Bucket($mock, 'yw3ry', array('test' => 'lol'));
 		
 		$mock->expects($this->once())->method('destroySession')
-			->with($this->isInstanceOf('InjectStack\\Middleware\\Session\\Bucket'));
+			->with($this->isInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket'));
 		
 		$obj->destroySession();
 		
@@ -157,4 +157,4 @@ class BucketTest extends \PHPUnit_Framework_TestCase
 
 
 /* End of file BucketTest.php */
-/* Location: src/tests/unit-tests/php/InjectStack/Middleware/Session */
+/* Location: src/tests/unit-tests/php/Inject/Stack/Middleware/Session */

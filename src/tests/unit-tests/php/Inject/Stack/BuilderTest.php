@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 class BuilderTest extends \PHPUnit_Framework_TestCase
 {
@@ -28,7 +28,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 	}
 	
 	/**
-	 * @expectedException \InjectStack\NoEndpointException
+	 * @expectedException \Inject\Stack\NoEndpointException
 	 */
 	public function testNoEndpointException()
 	{
@@ -71,7 +71,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 			return $env.'HANDLED';
 		};
 		
-		$middleware = $this->getMock('InjectStack\\MiddlewareInterface');
+		$middleware = $this->getMock('Inject\Stack\\MiddlewareInterface');
 		
 		$middleware->expects($this->once())->method('setNext')->with($endpoint);
 		$middleware->expects($this->once())->method('__invoke')->with('TESTDATA')->will($this->returnCallback(function($env) use($endpoint)
@@ -96,7 +96,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 			return $env.'HANDLED';
 		};
 		
-		$middleware2 = $this->getMock('InjectStack\\MiddlewareInterface');
+		$middleware2 = $this->getMock('Inject\Stack\\MiddlewareInterface');
 		
 		$middleware2->expects($this->once())->method('setNext')->with($endpoint);
 		$middleware2->expects($this->once())->method('__invoke')->with('1TESTDATA')->will($this->returnCallback(function($env) use($endpoint)
@@ -104,7 +104,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 			return $endpoint('2'.$env).'2';
 		}));
 		
-		$middleware = $this->getMock('InjectStack\\MiddlewareInterface');
+		$middleware = $this->getMock('Inject\Stack\\MiddlewareInterface');
 		
 		$middleware->expects($this->once())->method('setNext')->with($middleware2);
 		$middleware->expects($this->once())->method('__invoke')->with('TESTDATA')->will($this->returnCallback(function($env) use($middleware2)
@@ -132,7 +132,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 		};
 		
 		
-		$middleware = $this->getMock('InjectStack\\MiddlewareInterface');
+		$middleware = $this->getMock('Inject\Stack\\MiddlewareInterface');
 		
 		$middleware->expects($this->once())->method('setNext')->with($endpoint);
 		$middleware->expects($this->once())->method('__invoke')->with('2TESTDATA')->will($this->returnCallback(function($env) use($endpoint)
@@ -140,7 +140,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 			return $endpoint('1'.$env).'1';
 		}));
 		
-		$middleware2 = $this->getMock('InjectStack\\MiddlewareInterface');
+		$middleware2 = $this->getMock('Inject\Stack\\MiddlewareInterface');
 		
 		$middleware2->expects($this->once())->method('setNext')->with($middleware);
 		$middleware2->expects($this->once())->method('__invoke')->with('TESTDATA')->will($this->returnCallback(function($env) use($middleware)
@@ -166,7 +166,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 			return $env.'HANDLED';
 		};
 		
-		$middleware = $this->getMock('InjectStack\\MiddlewareInterface');
+		$middleware = $this->getMock('Inject\Stack\\MiddlewareInterface');
 		
 		$middleware->expects($this->once())->method('setNext')->with($endpoint);
 		$middleware->expects($this->once())->method('__invoke')->with('TESTDATA')->will($this->returnCallback(function($env) use($endpoint)
@@ -197,7 +197,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 			return $env.'HANDLED';
 		};
 		
-		$middleware = $this->getMock('InjectStack\\MiddlewareInterface');
+		$middleware = $this->getMock('Inject\Stack\\MiddlewareInterface');
 		$middleware->expects($this->once())->method('setNext')->with($endpoint);
 		
 		$stack = new Builder(array($middleware), $endpoint);
@@ -208,4 +208,4 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 
 
 /* End of file BuilderTest.php */
-/* Location: src/tests/unit-tests/php/InjectStack */
+/* Location: src/tests/unit-tests/php/Inject/Stack */

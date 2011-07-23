@@ -5,9 +5,9 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
-use \InjectStack\MiddlewareInterface;
+use \Inject\Stack\MiddlewareInterface;
 
 class RunTimerTest extends \PHPUnit_Framework_TestCase
 {
@@ -90,4 +90,4 @@ class RunTimerTest extends \PHPUnit_Framework_TestCase
 
 
 /* End of file RunTimerTest.php */
-/* Location: src/tests/unit-tests/php/InjectStack/Middleware */
+/* Location: src/tests/unit-tests/php/Inject/Stack/Middleware */

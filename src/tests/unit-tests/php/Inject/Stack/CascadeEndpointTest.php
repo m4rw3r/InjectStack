@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 class CascadeEndpointTest extends \PHPUnit_Framework_TestCase
 {
@@ -123,4 +123,4 @@ class CascadeEndpointTest extends \PHPUnit_Framework_TestCase
 
 
 /* End of file CascadeEndpointTest.php */
-/* Location: src/tests/unit-tests/php/InjectStack */
+/* Location: src/tests/unit-tests/php/Inject/Stack */

@@ -5,27 +5,27 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
-use \InjectStack\MiddlewareInterface;
+use \Inject\Stack\MiddlewareInterface;
 
 /**
- * @covers InjectStack\Middleware\Session
+ * @covers Inject\Stack\Middleware\Session
  */
 class SessionTest extends \PHPUnit_Framework_TestCase
 {
 	public function testInstantiate()
 	{
-		$obj = new Session($this->getMock('InjectStack\\Middleware\\Session\\StorageInterface'),
-			$this->getMock('InjectStack\\Middleware\\Session\\IdHandlerInterface'));
+		$obj = new Session($this->getMock('Inject\\Stack\\Middleware\\Session\\StorageInterface'),
+			$this->getMock('Inject\\Stack\\Middleware\\Session\\IdHandlerInterface'));
 		
 		$this->assertTrue($obj instanceof Session);
 		$this->assertTrue($obj instanceof MiddlewareInterface);
 	}
 	public function testRun()
 	{
-		$storage = $this->getMock('InjectStack\\Middleware\\Session\\StorageInterface');
-		$idhandl = $this->getMock('InjectStack\\Middleware\\Session\\IdHandlerInterface');
+		$storage = $this->getMock('Inject\\Stack\\Middleware\\Session\\StorageInterface');
+		$idhandl = $this->getMock('Inject\\Stack\\Middleware\\Session\\IdHandlerInterface');
 		
 		$idhandl->expects($this->once())->method('fetchUserId')
 			->with(array('test' => 'data'))
@@ -47,7 +47,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 			$that->assertEquals(2, count($env));
 			$that->assertEquals('data', $env['test']);
 			$that->assertFalse(empty($env['inject.session']));
-			$that->assertInstanceOf('InjectStack\\Middleware\\Session\\Bucket', $env['inject.session']);
+			$that->assertInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket', $env['inject.session']);
 			$that->assertEquals('this_is_a_user_id', $env['inject.session']->getId());
 			$that->assertInstanceOf('ArrayObject', $env['inject.session']);
 			$that->assertEquals(array('key' => 'value'), $env['inject.session']->getArrayCopy());
@@ -61,8 +61,8 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 	}
 	public function testRun2()
 	{
-		$storage = $this->getMock('InjectStack\\Middleware\\Session\\StorageInterface');
-		$idhandl = $this->getMock('InjectStack\\Middleware\\Session\\IdHandlerInterface');
+		$storage = $this->getMock('Inject\\Stack\\Middleware\\Session\\StorageInterface');
+		$idhandl = $this->getMock('Inject\\Stack\\Middleware\\Session\\IdHandlerInterface');
 		
 		$idhandl->expects($this->once())->method('fetchUserId')
 			->with(array('test' => 'data'))
@@ -84,7 +84,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 			$that->assertEquals(2, count($env));
 			$that->assertEquals('data', $env['test']);
 			$that->assertFalse(empty($env['inject.session']));
-			$that->assertInstanceOf('InjectStack\\Middleware\\Session\\Bucket', $env['inject.session']);
+			$that->assertInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket', $env['inject.session']);
 			$that->assertInternalType('string', $env['inject.session']->getId());
 			$that->assertInstanceOf('ArrayObject', $env['inject.session']);
 			$that->assertEquals(array(), $env['inject.session']->getArrayCopy());
@@ -98,8 +98,8 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 	}
 	public function testNoId()
 	{
-		$storage = $this->getMock('InjectStack\\Middleware\\Session\\StorageInterface');
-		$idhandl = $this->getMock('InjectStack\\Middleware\\Session\\IdHandlerInterface');
+		$storage = $this->getMock('Inject\\Stack\\Middleware\\Session\\StorageInterface');
+		$idhandl = $this->getMock('Inject\\Stack\\Middleware\\Session\\IdHandlerInterface');
 		
 		$idhandl->expects($this->once())->method('fetchUserId')
 			->with(array('test' => 'data'))
@@ -121,7 +121,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 			$that->assertEquals(2, count($env));
 			$that->assertEquals('data', $env['test']);
 			$that->assertFalse(empty($env['inject.session']));
-			$that->assertInstanceOf('InjectStack\\Middleware\\Session\\Bucket', $env['inject.session']);
+			$that->assertInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket', $env['inject.session']);
 			$that->assertInternalType('string', $env['inject.session']->getId());
 			$that->assertInstanceOf('ArrayObject', $env['inject.session']);
 			$that->assertEquals(array(), $env['inject.session']->getArrayCopy());
@@ -135,8 +135,8 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 	}
 	public function testInvalidateSession()
 	{
-		$storage = $this->getMock('InjectStack\\Middleware\\Session\\StorageInterface');
-		$idhandl = $this->getMock('InjectStack\\Middleware\\Session\\IdHandlerInterface');
+		$storage = $this->getMock('Inject\\Stack\\Middleware\\Session\\StorageInterface');
+		$idhandl = $this->getMock('Inject\\Stack\\Middleware\\Session\\IdHandlerInterface');
 		
 		$idhandl->expects($this->once())->method('fetchUserId')
 			->with(array('test' => 'data'))
@@ -162,7 +162,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 			$that->assertEquals(2, count($env));
 			$that->assertEquals('data', $env['test']);
 			$that->assertFalse(empty($env['inject.session']));
-			$that->assertInstanceOf('InjectStack\\Middleware\\Session\\Bucket', $env['inject.session']);
+			$that->assertInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket', $env['inject.session']);
 			$that->assertInternalType('string', $env['inject.session']->getId());
 			$that->assertInstanceOf('ArrayObject', $env['inject.session']);
 			$that->assertEquals(array('key' => 'value'), $env['inject.session']->getArrayCopy());
@@ -180,8 +180,8 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 	}
 	public function testNoSessionData()
 	{
-		$storage = $this->getMock('InjectStack\\Middleware\\Session\\StorageInterface');
-		$idhandl = $this->getMock('InjectStack\\Middleware\\Session\\IdHandlerInterface');
+		$storage = $this->getMock('Inject\\Stack\\Middleware\\Session\\StorageInterface');
+		$idhandl = $this->getMock('Inject\\Stack\\Middleware\\Session\\IdHandlerInterface');
 		
 		$idhandl->expects($this->once())->method('fetchUserId')
 			->with(array('test' => 'data'))
@@ -205,7 +205,7 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 			$that->assertEquals(2, count($env));
 			$that->assertEquals('data', $env['test']);
 			$that->assertFalse(empty($env['inject.session']));
-			$that->assertInstanceOf('InjectStack\\Middleware\\Session\\Bucket', $env['inject.session']);
+			$that->assertInstanceOf('Inject\\Stack\\Middleware\\Session\\Bucket', $env['inject.session']);
 			$that->assertInternalType('string', $env['inject.session']->getId());
 			$that->assertInstanceOf('ArrayObject', $env['inject.session']);
 			$that->assertEquals(array(), $env['inject.session']->getArrayCopy());
@@ -219,8 +219,8 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 	}
 	public function testGarbageCollect()
 	{
-		$storage = $this->getMock('InjectStack\\Middleware\\Session\\StorageInterface');
-		$idhandl = $this->getMock('InjectStack\\Middleware\\Session\\IdHandlerInterface');
+		$storage = $this->getMock('Inject\\Stack\\Middleware\\Session\\StorageInterface');
+		$idhandl = $this->getMock('Inject\\Stack\\Middleware\\Session\\IdHandlerInterface');
 		
 		$idhandl->expects($this->once())->method('fetchUserId')
 			->with(array('test' => 'data'))
@@ -248,8 +248,8 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 	}
 	public function testDestroySession()
 	{
-		$storage = $this->getMock('InjectStack\\Middleware\\Session\\StorageInterface');
-		$idhandl = $this->getMock('InjectStack\\Middleware\\Session\\IdHandlerInterface');
+		$storage = $this->getMock('Inject\\Stack\\Middleware\\Session\\StorageInterface');
+		$idhandl = $this->getMock('Inject\\Stack\\Middleware\\Session\\IdHandlerInterface');
 		
 		$idhandl->expects($this->once())->method('fetchUserId')
 			->with(array('test' => 'data'))
@@ -283,4 +283,4 @@ class SessionTest extends \PHPUnit_Framework_TestCase
 
 
 /* End of file SessionTest.php */
-/* Location: src/tests/unit-tests/php/InjectStack/Middleware */
+/* Location: src/tests/unit-tests/php/Inject/Stack/Middleware */

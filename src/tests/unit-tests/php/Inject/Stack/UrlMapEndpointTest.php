@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace InjectStack;
+namespace Inject\Stack;
 
 class UrlMapEndpointTest extends \PHPUnit_Framework_TestCase
 {
@@ -177,4 +177,4 @@ class UrlMapEndpointTest extends \PHPUnit_Framework_TestCase
 
 
 /* End of file UrlMapEndpointTest.php */
-/* Location: src/tests/unit-tests/php/InjectStack */
+/* Location: src/tests/unit-tests/php/Inject/Stack */

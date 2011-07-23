@@ -5,9 +5,9 @@
  * All rights reserved.
  */
 
-namespace InjectStack\Middleware;
+namespace Inject\Stack\Middleware;
 
-use \InjectStack\MiddlewareInterface;
+use \Inject\Stack\MiddlewareInterface;
 
 class FailsafeTest extends \PHPUnit_Framework_TestCase
 {
@@ -48,4 +48,4 @@ class FailsafeTest extends \PHPUnit_Framework_TestCase
 
 
 /* End of file FailsafeTest.php */
-/* Location: src/tests/unit-tests/php/InjectStack/Middleware */
+/* Location: src/tests/unit-tests/php/Inject/Stack/Middleware */
