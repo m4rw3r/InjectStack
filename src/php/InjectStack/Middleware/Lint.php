@@ -231,7 +231,7 @@ class Lint implements MiddlewareInterface
 			}
 		}
 		
-		$this->assert('Content-Type header not found', false);
+		$this->assert('Content-Type header not found', $this->isCodeWithNoBody($response_code));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -266,8 +266,11 @@ class Lint implements MiddlewareInterface
 		}
 		elseif($content_length !== false)
 		{
-			$this->assert(sprintf('Response length is %s, should be %s', $content_length , strlen($body)),
-				strlen($body) == $content_length);
+			if( ! is_resource($body))
+			{
+				$this->assert(sprintf('Response length is %s, should be %s', $content_length , strlen($body)),
+					strlen($body) == $content_length);
+			}
 		}
 	}
 	
