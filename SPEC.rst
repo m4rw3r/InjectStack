@@ -143,7 +143,7 @@ The Environment variable must always include these keys:
 
 ``REQUEST_METHOD``:
     The HTTP request method, such as "GET" or "POST". This cannot ever
-    be an empty string, and so is always required.
+    be an empty string, and so is always required. Uppercase.
 
 ``SCRIPT_NAME``:
     The initial portion of the request URL's "path" that corresponds
