@@ -42,41 +42,83 @@ use \Inject\Stack\AdapterInterface;
  * 
  * If a worker process dies, for any reason, it will be replaced with a new fork.
  * 
+ * If the shared memory monitoring is enabled (AbstractDaemon::$use_shmop == true, default)
+ * the child processes writes into shared memory periodically to tell the managing
+ * process that they are still responsive to requests. If a child does not write within
+ * a set period of time, it will be killed and restarted.
+ * 
  * To force a re-fork of all the worker processes, send a SIGUSR1 signal to
  * the monitor process (the one manually started). This will make all children
  * quit as soon as they do not serve a request.
  * 
- * To kill the monitor and all workers, just send the normal SIGTERM or SIGHUP
- * signal to the managing process and it will forward it to the children.
+ * To kill the monitor and all workers, just send the normal SIGTERM, SIGHUP or
+ * SIGINT signal to the managing process and it will forward it to the children.
  */
 abstract class AbstractDaemon implements AdapterInterface
 {
+	/**
+	 * If to use Shared Memory for worker process monitoring, will restart workers
+	 * if they hang. Requires PHP to be compiled with `--enable-shmop`.
+	 * 
+	 * @var boolean
+	 */
+	public static $use_shmop = true;
+	
 	/**
 	 * List of child process ids.
 	 * 
 	 * @var array(int)
 	 */
-	protected $child_pids = array();
+	private $child_pids = array();
+	
+	/**
+	 * Integer pointing to the shared memory.
+	 * 
+	 * @var int
+	 */
+	private $shmop_ptr = null;
+	
+	/**
+	 * The index position for the PID in the shared memory for this child.
+	 * 
+	 * @var int
+	 */
+	private $pid_index = null;
+	
+	/**
+	 * The amount of time to spend waiting between requests before timing out and
+	 * calling notifyNoHang() and resuming waiting for requests.
+	 * 
+	 * @var int
+	 */
+	protected $sleep_time = 10;
 	
 	// ------------------------------------------------------------------------
 	
 	/**
 	 * Starts several child processes and maintains the specified number of children.
 	 * 
-	 * @param  Closure  Function creating the non-shared resources and returns
-	 *                  the application to run
-	 * @param  int      Number of child processes
+	 * @param  Closure   Function creating the non-shared resources and returns
+	 *                   the application to run
+	 * @param  int       Number of child processes
+	 * @param  int|false Number of seconds between checking up on worker status, > 1
+	 *                   The shared memory monitoring will use half of this number as
+	 *                   the execution limit for one request for the workers
 	 * @return never
 	 */
-	public function serve(Closure $app_builder, $num_children = 5)
+	public function serve(Closure $app_builder, $num_children = 5, $sleep_time = 2)
 	{
+		$this->sleep_time = $sleep_time < 2 ? 2 : $sleep_time;
+		
 		// Init shared resources for the daemon
 		$this->preFork();
+		
+		static::$use_shmop && $this->initShmop($num_children);
 		
 		// Start the specified number of children
 		for($i = 0; $i < $num_children; $i++)
 		{
-			$this->child_pids[] = $this->fork($app_builder);
+			$this->child_pids[$i] = $this->fork($app_builder, $i);
 		}
 		
 		// Monitor loop:
@@ -85,34 +127,60 @@ abstract class AbstractDaemon implements AdapterInterface
 			// Register signal handlers
 			pcntl_signal(SIGTERM, array($this, 'killChildren'), false);
 			pcntl_signal(SIGHUP,  array($this, 'killChildren'), false);
+			pcntl_signal(SIGINT,  array($this, 'killChildren'), false);
 			pcntl_signal(SIGUSR1, array($this, 'reloadChildren'), false);
 			
-			$null = null;
+			// Wait for a child exit or hang, or signal
 			declare(ticks = 1)
 			{
-				// Wait for child exit, or signal
-				$dead_pid = pcntl_wait($null);
+				$dead_pid = -1;
+				
+				while($dead_pid < 1)
+				{
+					// TODO: maybe time_nanosleep()?
+					sleep($this->sleep_time);
+					
+					$null = null;
+					$dead_pid = pcntl_waitpid(-1, $null, WNOHANG);
+					
+					if( ! in_array($dead_pid, $this->child_pids))
+					{
+						// Not a process we currently care about, ignore
+						$dead_pid = -1;
+					}
+					
+					if(static::$use_shmop && $dead_pid < 1 && ($index = $this->checkHang()) > -1)
+					{
+						$dead_pid = $this->child_pids[$index];
+						
+						echo "[Child $dead_pid has hanged]\n";
+						
+						// TODO: This will trigger pcntl_waitpid() next iteration,
+						// fix so it does not?
+						posix_kill($dead_pid, SIGTERM);
+					}
+				}
 			}
 			
-			// Error, retry
-			if($dead_pid === -1)
-			{
-				continue;
-			}
-			
-			echo "Restarting child $dead_pid\n";
 			// Reset signal handlers for child
 			pcntl_signal(SIGTERM, SIG_DFL);
 			pcntl_signal(SIGHUP,  SIG_DFL);
+			pcntl_signal(SIGINT,  SIG_DFL);
 			pcntl_signal(SIGUSR1, SIG_DFL);
 			
 			// Remove dead child PID
-			if(($key = array_search($dead_pid, $this->child_pids)) !== -1)
+			if(($key = array_search($dead_pid, $this->child_pids)) !== false)
 			{
 				unset($this->child_pids[$key]);
+				
+				echo "Restarting child $dead_pid\n";
+				$this->child_pids[$key] = $this->fork($app_builder, $key);
 			}
-			
-			$this->child_pids[] = $this->fork($app_builder);
+			else
+			{
+				// TODO: Should we do anything about this?
+				// echo "[Child $dead_pid is not a registered PID]\n";
+			}
 		}
 	}
 	
@@ -127,6 +195,7 @@ abstract class AbstractDaemon implements AdapterInterface
 	{
 		pcntl_signal(SIGTERM, SIG_DFL);
 		pcntl_signal(SIGHUP,  SIG_DFL);
+		pcntl_signal(SIGINT,  SIG_DFL);
 		pcntl_signal(SIGUSR1, SIG_DFL);
 		
 		foreach($this->child_pids as $pid)
@@ -160,6 +229,110 @@ abstract class AbstractDaemon implements AdapterInterface
 	}
 	
 	// ------------------------------------------------------------------------
+
+	/**
+	 * Initializes the shared memory for worker hang-checking.
+	 * 
+	 * @param  int   The number of worker processes to use
+	 * @return void
+	 */
+	private function initShmop($num_children)
+	{
+		// Ensure we delete the shared memory on shutdown
+		register_shutdown_function(array($this, 'delShmop'));
+		
+		// Make 10 attempts at getting shared memory
+		$i = 0;
+		while( ! $this->shmop_ptr && $i < 10)
+		{
+			// The key is a random number in an unsigned int16
+			$this->shmop_ptr  = shmop_open(mt_rand(0, 4294967295), "c", 0644, $num_children);
+			
+			$i++;
+		}
+		
+		if( ! $this->shmop_ptr)
+		{
+			throw new Exception("Could not allocate shared memory for worker communication");
+		}
+		
+		// Reset shared memory
+		shmop_write($this->shmop_ptr, str_repeat("0", $num_children), 0);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Frees the shared memory allocated by initShmop().
+	 * 
+	 * @return void
+	 */
+	public function delShmop()
+	{
+		echo "Freeing shared memory...";
+		
+		$res = shmop_delete($this->shmop_ptr);
+		
+		if( ! $res)
+		{
+			echo "Failed to free $this->shmop_ptr\n";
+		}
+		else
+		{
+			echo "DONE\n";
+		}
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Writes a byte into the shared memory to indicate that this child is still
+	 * alive and responsive, call before starting to wait for a request.
+	 * 
+	 * Wait at most $this->sleep_time for a new request before calling again.
+	 * 
+	 * @return void
+	 */
+	public function notifyNoHang()
+	{
+		static::$use_shmop && shmop_write($this->shmop_ptr, "1", $this->pid_index);
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Checks if any of the children has not written to the shared memory, if
+	 * that is the case, the first index without a "1" in it will be returned.
+	 * 
+	 * Does not work when $use_shmop is false, do not call if that is the case.
+	 * 
+	 * @return The child index for the hanged child, -1 otherwise.
+	 */
+	private function checkHang()
+	{
+		$index        = -1;
+		$num_children = count($this->child_pids);
+		$bytes        = shmop_read($this->shmop_ptr, 0, $num_children);
+		
+		// Find a process which has not written its no-hang notification
+		for($i = 0; $i < $num_children; $i++)
+		{
+			// The process has not written a signal
+			if( ! $bytes[$i])
+			{
+				$index = $i;
+				
+				break;
+			}
+		}
+		
+		// Reset shared memory
+		shmop_write($this->shmop_ptr, str_repeat("0", $num_children), 0);
+		
+		return $index;
+	}
+	
+	// ------------------------------------------------------------------------
 	
 	/**
 	 * Attempts to fork this process, if successful; the child will call run() with the result
@@ -167,9 +340,10 @@ abstract class AbstractDaemon implements AdapterInterface
 	 * 
 	 * @param  Closure  Function to be called to create the non-shared resources and finally
 	 *                  instantiate the application
+	 * @param  int      The index of the PID in shared memory
 	 * @return int      PID of the worker if we are the server, otherwise this process dies after run() returns
 	 */
-	protected function fork($app_builder)
+	protected function fork($app_builder, $pid_index)
 	{
 		$pid = pcntl_fork();
 		
@@ -183,6 +357,12 @@ abstract class AbstractDaemon implements AdapterInterface
 			// Child:
 			// Register the graceful shutdown signal handler, and declare that we listen for it
 			pcntl_signal(SIGUSR1, array($this, 'shutdownGracefully'), false);
+			
+			// Update the pid_index for shared memory and also the sleep time,
+			// sleep time needs to be half so we can guarantee that a child will
+			// notify that it is still responsive
+			$this->pid_index  = $pid_index;
+			$this->sleep_time = (int) $this->sleep_time / 2;
 			
 			declare(ticks = 1)
 			{

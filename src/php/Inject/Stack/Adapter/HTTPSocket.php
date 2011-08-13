@@ -65,16 +65,6 @@ class HTTPSocket extends AbstractDaemon
 	protected $allowed_methods = array('OPTIONS', 'GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'TRACE', 'CONNECT');
 	
 	/**
-	 * The timeout for the socket, when exceeded, this process will exit, seconds.
-	 * 
-	 * Can be used to auto-restart the worker processes during low load when running
-	 * this as adapter as a daemon.
-	 * 
-	 * @var int
-	 */
-	protected $socket_timeout = 3600;
-	
-	/**
 	 * Buffer size in bytes for the case when streaming from a resource handle.
 	 * 
 	 * @var int
@@ -86,14 +76,11 @@ class HTTPSocket extends AbstractDaemon
 	/**
 	 * @param  array(string => mixed)  Array with the default contents of the $env
 	 *                                 variable, will be merged with the default array
-	 * @param  int                     The timeout for the socket, when exceeded, this
-	 *                                 process will exit, seconds.
 	 * @param  array(string)           List of allowed HTTP methods, will override
 	 *                                 the default list
 	 */
-	public function __construct(array $default_env = array(), $socket_timeout = 3600, $allowed_methods = null)
+	public function __construct(array $default_env = array(), $allowed_methods = null)
 	{
-		$this->socket_timeout = $socket_timeout;
 		$this->default_env    = array_merge(array(
 			'SERVER_NAME'       => 'localhost',
 			'SERVER_PORT'       => 80,
@@ -156,11 +143,21 @@ class HTTPSocket extends AbstractDaemon
 		}
 		
 		// Main run loop
-		while($this->doRun && ($conn = @stream_socket_accept($this->socket, $this->socket_timeout)))
+		while($this->doRun)
 		{
+			$this->notifyNoHang();
+			
+			// Wait for a new connection
+			if( ! $conn = @stream_socket_accept($this->socket, $this->sleep_time))
+			{
+				// Timed out, we need to notify the parent process of the fact that we're still alive
+				continue;
+			}
+			
 			try
 			{
-				// This loop is for the cases when we only get a partial header, then stream_get_line() returns false
+				// This loop is for the cases when we only get a partial header, then
+				// stream_get_line() returns false, empty string will be returned on close
 				while(($str = stream_get_line($conn, 4128, "\r\n\r\n")) === false)
 				{
 					// Empty
