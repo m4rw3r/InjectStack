@@ -7,6 +7,8 @@
 
 namespace Inject\Stack;
 
+use Builder\NoEndpointException;
+
 /**
  * An object which creates a stack of middleware for dealing with requests, middleware can modify the
  * request or response, return a response or do other actions before the request reaches the endpoint.

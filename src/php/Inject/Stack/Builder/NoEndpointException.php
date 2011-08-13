@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-namespace Inject\Stack;
+namespace Inject\Stack\Builder;
 
 /**
  * Exception telling the user that an endpoint is missing on a Builder.
@@ -20,4 +20,4 @@ class NoEndpointException extends \RuntimeException
 }
 
 /* End of file NoEndpointException.php */
-/* Location: src/php/Inject/Stack */
+/* Location: src/php/Inject/Stack/Builder */
