@@ -7,7 +7,7 @@
 
 namespace Inject\Stack;
 
-use Builder\NoEndpointException;
+use \Inject\Stack\Builder\NoEndpointException;
 
 /**
  * An object which creates a stack of middleware for dealing with requests, middleware can modify the

@@ -28,7 +28,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
 	}
 	
 	/**
-	 * @expectedException \Inject\Stack\NoEndpointException
+	 * @expectedException \Inject\Stack\Builder\NoEndpointException
 	 */
 	public function testNoEndpointException()
 	{
