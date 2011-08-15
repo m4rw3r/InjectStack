@@ -1,0 +1,5 @@
+<project default="local-help">
+<target name="local-help">
+  <echo message="This component has no local build targets." />
+</target>
+</project>

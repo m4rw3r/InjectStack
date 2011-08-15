@@ -44,6 +44,9 @@
   <!-- a user to use to publish on the pear server -->
   <property name="remote.user" value="" override="true" />
 
+  <!-- override this if you want to run additional PEAR commands -->
+  <property name="pear.cmd" value="" override="true" />
+
   <!-- lists of the files that make up our package -->
   <fileset dir="${project.src.bindir}" id="binfiles">
     <include name="**/**"/>
@@ -81,7 +84,13 @@
     <exclude name="**/.empty"/>
     <exclude name="**/.svn"/>
   </fileset>
+  <fileset dir="${project.basedir}" id="topleveldocfiles">
+    <include name="*.txt" />
+    <include name="*.md" />
+  </fileset>
 
+  <import file="build.local.xml"/>
+  
   <!-- Tell the user what this build file supports -->
   <target name="help">
     <echo message="${project.name} ${project.version}: build.xml targets:" />
@@ -106,6 +115,8 @@
     <echo message="  Create a PEAR-compatible package" />
     <echo message="install-vendor" />
     <echo message="  Install this component from source into vendor/" />
+    <echo message="vendor-pear" />
+    <echo message="  Run additional PEAR commands inside the vendor folder" />
     <echo message="install-system" />
     <echo message="  Install this component from source for all local users" />
     <echo message="  You must be root to run this target on Linux!!" />
@@ -114,6 +125,8 @@
     <echo message="  of your PEAR channel" />
     <echo message="clean" />
     <echo message="  Remove all temporary folders created by this build file" />
+    <echo message="" />
+    <phingcall target="local-help" />
   </target>
 
   <!-- Run PHP lint on all of the source code -->
@@ -216,6 +229,7 @@
       <fileset refid="testfiles"/>
       <fileset refid="wwwfiles"/>
       <fileset refid="docfiles"/>
+      <fileset refid="topleveldocfiles"/>
     </copy>
     <copy todir="${project.builddir}">
       <fileset dir=".">
@@ -248,6 +262,11 @@
   <!-- Publish to local copy of PEAR channel -->
   <target name="publish-local" depends="pear-package">
     <exec command="pirum add ${pear.local} ${project.tarfile}" checkreturn="true" logoutput="true" />
+  </target>
+
+  <!-- Run additional PEAR commands in the vendor folder -->
+  <target name="vendor-pear">
+    <exec command="pear -c ${project.tmpdir}/pear-config ${pear.cmd}" logoutput="true" checkreturn="true" />
   </target>
 
   <!-- Clean up the mess -->
