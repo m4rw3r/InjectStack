@@ -306,7 +306,7 @@ abstract class AbstractDaemon implements AdapterInterface
 	 * 
 	 * Does not work when $use_shmop is false, do not call if that is the case.
 	 * 
-	 * @return The child index for the hanged child, -1 otherwise.
+	 * @return int  The child index for the hanged child, -1 otherwise.
 	 */
 	private function checkHang()
 	{

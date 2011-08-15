@@ -290,6 +290,7 @@ class Mongrel2 extends AbstractDaemon
 	/**
 	 * Parses a mongrel request.
 	 * 
+	 * @param  string  The request string from ZeroMQ
 	 * @return array(string, int, string, array, string)
 	 */
 	public function parseRequest($msg)
