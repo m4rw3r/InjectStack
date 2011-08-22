@@ -1,6 +1,6 @@
-==========================
-InjectStack Specifications
-==========================
+============================
+Inject\\Stack Specifications
+============================
 
 This protocol is almost a straight port of Ruby's Rack_ `Specifications
 <http://rack.rubyforge.org/doc/files/SPEC.html>`_.
@@ -8,26 +8,28 @@ This protocol is almost a straight port of Ruby's Rack_ `Specifications
 Introduction
 ============
 
-The basic principle of the framework is a stack of layers — so called 
+The basic principle of Inject\\Stack is a stack of layers — so called 
 middleware — which perform specific actions and then passes the request
-on to the next layer, ultimately reaching a controller's action method.
-The action method might pass this on to another stack which leads to another
-controller's action, or something completely different... you get the idea.
+on to the next layer, ultimately reaching an endpoint which performs
+the bulk of the operations required to create a response (think of an
+endpoint as an action in a Controller from the MVC [#]_ pattern).
+The endpoint might pass this on to another stack which leads to another
+endpoint, or something completely different... you get the idea.
 
-When an action is done executing, its response will be returned through all
+When an endpoint is done executing, its response will be returned through all
 the middleware, enabling them to finish processing of the request and
 finally let the browser see the result.
 
-In more general terms, the application interface only requires one condition:
-object implementing the method ``__invoke($env)`` which incidentally also
-includes PHP Closures. The ``$env`` parameter and the return value of the
+In more general terms, the application interface only requires one thing:
+an object implementing the method ``__invoke($env)`` which incidentally also
+includes `PHP Closures`_. The ``$env`` parameter and the return value of the
 application are required have a specific format, see `The Environment Variable`_
 and `The Return Value`_.
 
-To make the creation of the stack easier, the class ``\InjectStack\Builder`` 
-and the interface ``\InjectStack\MiddlewareInterface`` has been introduced.
-``\InjectStack\Builder`` constructs a stack from supplied concrete instances
-of the ``\InjectStack\MiddlewareInterface`` and a final endpoint implementing
+To make the creation of the stack easier, the class ``\Inject\Stack\Builder`` 
+and the interface ``\Inject\Stack\MiddlewareInterface`` has been introduced.
+``\Inject\Stack\Builder`` constructs a stack from supplied concrete instances
+of the ``\Inject\Stack\MiddlewareInterface`` and a final endpoint implementing
 the method ``__invoke($env)``.
 
 What is an endpoint?
@@ -36,10 +38,12 @@ What is an endpoint?
 An endpoint is a PHP object implementing ``__invoke($env)`` method (which
 also includes PHP closures taking a single parameter). Usually the main
 endpoint of your application will be a Router which in turn will call the
-controller, or a controller specific ``\InjectStack\Builder`` or something else.
+controller, or a controller specific ``\Inject\Stack\Builder`` or something else.
 
 Running of a simple endpoint::
 
+  <?php
+  
   class MyEndpoint
   {
       public function __invoke($env)
@@ -55,10 +59,10 @@ Running of a simple endpoint::
   };
   
   // Run your application:
-  $adapter = new \InjectStack\Adapter\Generic();
+  $adapter = new \Inject\Stack\Adapter\Generic();
   $adapter->run($hello_endpoint);
 
-For a more complicated endpoint, see the ``\InjectStack\CascadeEndpoint``.
+For a more complicated endpoint, see the ``\Inject\Stack\CascadeEndpoint``.
 This endpoint attempts several callbacks until one does not return a
 response with the status code (first array index in the response) set to
 ``404``. So the associated callbacks will return a response along the lines
@@ -71,7 +75,7 @@ If you have used Ruby on Rails or Ruby's Rack webserver interface you
 probably already know what it is as it is almost a port.
 
 A middleware is an object implementing 
-``InjectStack\MiddlewareInterface`` which specifies a basic
+``Inject\Stack\MiddlewareInterface`` which specifies a basic
 interface for middleware. This interface enforces two public methods:
 ``setNext(callback $next)`` (sets the callback pointing to the next
 layer/endpoint) and ``__invoke($env)`` which performs the middleware
@@ -85,9 +89,11 @@ mainly because it will not be as fast or flexible in PHP as it is in Ruby.
 Here is an example middleware which checks for the ``$_GET`` parameter "go" and 
 returns a 404 if it cannot find it::
 
+  <?php
+  
   namespace MyNamespace;
   
-  use \InjectStack\MiddlewareInterface;
+  use \Inject\Stack\MiddlewareInterface;
   
   class BlockIfNotGo implements MiddlewareInterface
   {
@@ -111,15 +117,16 @@ returns a 404 if it cannot find it::
   }
 
 For a simple middleware which does something more useful, look at
-``\InjectStack\Middleware\RunTimer`` which times the execution of all the 
-following middleware and endpoint(s) and code called by those.
+``\Inject\Stack\Middleware\RunTimer`` which times the execution of all the 
+nested middleware and endpoint(s), code called by those and finally adds
+this in an ``X-Runtime`` response header.
 
 The Environment Variable
 ========================
 
 The environment variable, usually referred to as ``$env``, is a hash
 (PHP array with string keys) which is passed through all the layers
-of the framework. This hash contains a list of CGI like-headers (as
+of the middleware stack. This hash contains a list of CGI like-headers (as
 ``$_SERVER`` usually looks like).
 
 The base for this ``$env`` variable is usually the global ``$_SERVER``
@@ -166,11 +173,11 @@ The Environment variable must always include these keys:
 
 ``BASE_URI``:
     The URI prefix to be used when referring to static assets which are
-    not processed by the framework.
+    not processed by the application logic.
     
     This is usually the URI without the ``index.php`` file name, and will
     usually be taken care of by the concrete class implementing
-    ``\InjectStack\AdapterInterface``.
+    ``\Inject\Stack\AdapterInterface``.
 
 ``QUERY_STRING``:
     The portion of the request URL that follows the ?, if any. May be empty,
@@ -195,17 +202,17 @@ The Environment variable must always include these keys:
 Adapter supplied keys
 ---------------------
 
-InjectStack's ``ServerAdapter`` s will include these keys:
+Inject\\Stack's ``AdapterInterface`` implementations will include these keys:
 
 ``inject.version``:
-    The current version of InjectStack.
+    The current version of Inject\\Stack.
 
 ``inject.url_scheme``:
     ``https`` or ``http``, depending on the request URL.
 
 ``inject.adapter``:
     The class name of the concrete class implementing
-    ``\InjectStack\AdapterInterface`` which is used to run the application.
+    ``\Inject\Stack\AdapterInterface`` which is used to run the application.
 
 ``inject.get``:
     Contains the GET data.
@@ -225,7 +232,7 @@ InjectStack's ``ServerAdapter`` s will include these keys:
 Optional keys with restrictions
 -------------------------------
 
-All keys which do not contain a dot (``.``) must contain string values,
+All keys which do not contain a dot (``.``) must contain string/scalar values,
 if you include a dot in the name (like ``web.route``) there are no
 restrictions on what you can use as a value.
 
@@ -307,7 +314,7 @@ Validating ``$env`` and the response
 ====================================
 
 To validate ``$env`` and the response of your middleware/endpoints, you may
-use the ``\InjectStack\Middleware\Lint`` middleware. This middleware will
+use the ``\Inject\Stack\Middleware\Lint`` middleware. This middleware will
 validate the ``$env`` var when it is received, and after the next 
 middleware/endpoint has processed the request, it will validate the response.
 
@@ -320,9 +327,12 @@ If any of the assertions fail, a ``LintException`` will be thrown, detailing
 the problem
 
 *Note*: Do not use this in production, however, as all the checks will slow 
-down the request processing.
+down the request processing by a large factor.
 
 
-.. _Rack: http://rack.rubyforge.org/
+.. [#] Model-View-Controller, see `Wikipedia about MVC`_
 .. [#] Hierarchical Model-View-Controller, see `Wikipedia about HMVC`_
+.. _Rack: http://rack.rubyforge.org/
+.. _`PHP Closures`: http://php.net/manual/en/functions.anonymous.php
+.. _`Wikipedia about MVC`: http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller
 .. _`Wikipedia about HMVC`: http://en.wikipedia.org/wiki/Presentation-abstraction-control
