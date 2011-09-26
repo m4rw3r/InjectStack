@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" packagerversion="1.9.1" version="2.0" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0     http://pear.php.net/dtd/tasks-1.0.xsd     http://pear.php.net/dtd/package-2.0     http://pear.php.net/dtd/package-2.0.xsd">
+<package xmlns="http://pear.php.net/dtd/package-2.0"
+         xmlns:tasks="http://pear.php.net/dtd/tasks-1.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         packagerversion="1.9.1"
+         version="2.0"
+         xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0     http://pear.php.net/dtd/tasks-1.0.xsd     http://pear.php.net/dtd/package-2.0     http://pear.php.net/dtd/package-2.0.xsd">
 	<name>${project.name}</name>
 	<channel>${project.channel}</channel>
 	<summary>A Rack port for PHP, making it easy to construct web applications based on a layered architecture.</summary>
 	<description>
     Description goes here
-  </description>
+	</description>
 	<lead>
 		<name>Martin Wernståhl</name>
 		<user>m4rw3r</user>
@@ -25,7 +30,7 @@
 	<license>New BSD License</license>
 	<notes>
     No notes.
-  </notes>
+	</notes>
 	<contents>
 		<dir baseinstalldir="/" name="/">
 ${contents}
@@ -41,9 +46,9 @@ ${contents}
 			</pearinstaller>
 			<package>
 				<name>Autoloader</name>
-				<channel>pear.gradwell.com</channel>
-				<min>2.0.0</min>
-				<max>2.999.9999</max>
+				<channel>pear.phix-project.org</channel>
+				<min>3.0.0</min>
+				<max>4.999.9999</max>
 			</package>
 		</required>
 		<optional>
@@ -70,9 +75,10 @@ ${contents}
 				<api>beta</api>
 			</stability>
 			<date>2011-04-19</date>
-			<license>All rights reserved</license>
+			<license>New BSD</license>
 			<notes>
-      </notes>
+				
+			</notes>
 		</release>
 	</changelog>
 </package>

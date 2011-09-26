@@ -95,38 +95,56 @@
   <target name="help">
     <echo message="${project.name} ${project.version}: build.xml targets:" />
     <echo message="" />
-    <echo message="lint" />
-    <echo message="  Check the PHP files for syntax errors" />
-    <echo message="test" />
-    <echo message="  Run the component's PHPUnit tests" />
-    <echo message="code-review" />
-    <echo message="  Run all of the code quality targets:" />
+    <echo message="Setup your dev environment:" />
     <echo message="" />
-    <echo message="  code-browser" />
-    <echo message="    Run code quality tests for PHP_CodeBrowser" />
-    <echo message="  phpcpd" />
-    <echo message="    Check for cut and paste problems" />
-    <echo message="  phpdoc" />
-    <echo message="    Create the PHP docs from source code" />
+    <echo message="  build-vendor" />
+    <echo message="    Populate vendor/ with this package's dependencies" />
+    <echo message="  vendor-pear" />
+    <echo message="    Run additional PEAR commands inside the vendor folder" />
     <echo message="" />
-    <echo message="build-vendor" />
-    <echo message="  Populate vendor/ with this package's dependencies" />
-    <echo message="pear-package" />
-    <echo message="  Create a PEAR-compatible package" />
-    <echo message="install-vendor" />
-    <echo message="  Install this component from source into vendor/" />
-    <echo message="vendor-pear" />
-    <echo message="  Run additional PEAR commands inside the vendor folder" />
-    <echo message="install-system" />
-    <echo message="  Install this component from source for all local users" />
-    <echo message="  You must be root to run this target on Linux!!" />
-    <echo message="publish-local" />
-    <echo message="  Publish your PEAR-compatible package into a local copy" />
-    <echo message="  of your PEAR channel" />
-    <echo message="clean" />
-    <echo message="  Remove all temporary folders created by this build file" />
+    <echo message="Develop your code:" />
+    <echo message="" />
+    <echo message="  lint" />
+    <echo message="    Check the PHP files for syntax errors" />
+    <echo message="  test" />
+    <echo message="    Run the component's PHPUnit tests" />
+    <echo message="  code-review" />
+    <echo message="    Run all of the code quality targets:" />
+    <echo message="" />
+    <echo message="    code-browser" />
+    <echo message="      Run code quality tests for PHP_CodeBrowser" />
+    <echo message="    phpcpd" />
+    <echo message="      Check for cut and paste problems" />
+    <echo message="    phpdoc" />
+    <echo message="      Create the PHP docs from source code" />
+    <echo message="" />
+    <echo message="Publish your component:" />
+    <echo message="" />
+    <echo message="  pear-package" />
+    <echo message="    Create a PEAR-compatible package" />
+    <echo message="  publish-local" />
+    <echo message="    Publish your PEAR-compatible package into a local copy" />
+    <echo message="    of your PEAR channel" />
+    <echo message="  install-vendor" />
+    <echo message="    Install this component from source into vendor/" />
+    <echo message="  install-system" />
+    <echo message="    Install this component from source for all local users" />
+    <echo message="    You must be root to run this target on Linux!!" />
+    <echo message=""/>
+    <echo message="Additional targets:" />
+    <echo message=""/>
+    <echo message="  clean" />
+    <echo message="    Remove all temporary folders created by this build file" />
+    <echo message="  version" />
+    <echo message="    Show this component's version from build.properties" />
     <echo message="" />
     <phingcall target="local-help" />
+  </target>
+
+  <!-- Show the current version, as set in build.properties -->
+  <!-- This is just to be a time-saver -->
+  <target name="version">
+    <echo message="${project.version}" />
   </target>
 
   <!-- Run PHP lint on all of the source code -->

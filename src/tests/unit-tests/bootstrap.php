@@ -6,26 +6,22 @@
 //		A helping hand for running our unit tests
 //
 // Author	Stuart Herbert
-//		(stuart.herbert@gradwell.com)
+//		(stuart@stuartherbert.com)
 //
-// Copyright	(c) 2010 Gradwell dot com Ltd
-//		All rights reserved
+// Copyright	(c) 2011 Stuart Herbert
+//		Released under the New BSD license
 //
 // =========================================================================
 
-// step 1: create the APP_TOPDIR constant that all MF components require
+// step 1: create the APP_TOPDIR constant that all components require
 define('APP_TOPDIR', realpath(__DIR__ . '/../../php'));
 define('APP_LIBDIR', realpath(__DIR__ . '/../../../vendor/php'));
 define('APP_TESTDIR', realpath(__DIR__ . '/php'));
 
-// step 2: add the lib-vendor code to the include path
-set_include_path(APP_LIBDIR . PATH_SEPARATOR . get_include_path());
+// step 2: find the autoloader, and install it
+require_once(APP_LIBDIR . '/psr0.autoloader.php');
 
-// step 3: add the tests folder to the include path
-set_include_path(APP_TESTDIR . PATH_SEPARATOR . get_include_path());
-
-// step 4: add our code to the include path
-set_include_path(APP_TOPDIR . PATH_SEPARATOR . get_include_path());
-
-// step 5: find the autoloader, and install it
-require_once(APP_LIBDIR . '/gwc.autoloader.php');
+// step 3: add the additional paths to the include path
+psr0_autoloader_searchFirst(APP_LIBDIR);
+psr0_autoloader_searchFirst(APP_TESTDIR);
+psr0_autoloader_searchFirst(APP_TOPDIR);
