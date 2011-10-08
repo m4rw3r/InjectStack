@@ -145,14 +145,8 @@ class HTTPSocket extends AbstractDaemon
 		// Main run loop
 		while($this->doRun)
 		{
-			$this->notifyNoHang();
-			
 			// Wait for a new connection
-			if( ! $conn = @stream_socket_accept($this->socket, $this->sleep_time))
-			{
-				// Timed out, we need to notify the parent process of the fact that we're still alive
-				continue;
-			}
+			$conn = stream_socket_accept($this->socket);
 			
 			try
 			{
@@ -291,6 +285,12 @@ class HTTPSocket extends AbstractDaemon
 			$last_key = 'HTTP_'.strtoupper(strtr(substr($line, 0, $pos), '-', '_'));
 			
 			$env[$last_key] = ltrim(substr($line, $pos + 1), " \t");
+		}
+		
+		if( ! array_key_exists('HTTP_HOST', $env))
+		{
+			// Host header is required
+			return 400;
 		}
 		
 		$path = parse_url($reqline[1]);

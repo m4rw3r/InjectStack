@@ -129,32 +129,6 @@ class Mongrel2 extends AbstractDaemon
 	}
 	
 	// ------------------------------------------------------------------------
-	
-	/**
-	 * Starts several child processes and maintains the specified number of children.
-	 * 
-	 * @param  Closure   Function creating the non-shared resources and returns
-	 *                   the application to run
-	 * @param  int       Number of child processes
-	 * @param  int|false Number of seconds between checking up on worker status, > 1
-	 *                   The shared memory monitoring will use half of this number as
-	 *                   the execution limit for one request for the workers
-	 * @return never
-	 */
-	public function serve(Closure $app_builder, $num_children = 5, $sleep_time = 2)
-	{
-		if(static::$use_shmop)
-		{
-			echo "Info: Mongrel 2 adapter does not support shared memory monitoring, switching it off\n";
-		}
-		
-		// ZMQSocket->recv() does not support timeouts, and polling would destroy performance
-		static::$use_shmop = false;
-		
-		parent::serve($app_builder, $num_children, $sleep_time);
-	}
-	
-	// ------------------------------------------------------------------------
 
 	/**
 	 * Listens for requests from Mongrel2 and dispatches them to $app, and
@@ -399,7 +373,7 @@ class Mongrel2 extends AbstractDaemon
 				}
 				
 				// Terminate
-				$this->sendResponse($uuid, $conn_id,  "0\r\n\r\n");
+				$this->sendResponse($uuid, $conn_id, "0\r\n\r\n");
 			}
 			else
 			{
