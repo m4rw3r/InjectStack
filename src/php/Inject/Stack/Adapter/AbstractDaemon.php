@@ -98,7 +98,7 @@ abstract class AbstractDaemon implements AdapterInterface
 			// Wait for a child exit or hang, or signal
 			declare(ticks = 1)
 			{
-				$nulll = null;
+				$null = null;
 				$dead_pid = pcntl_wait($null);
 			}
 			
