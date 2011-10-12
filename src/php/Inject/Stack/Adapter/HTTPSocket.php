@@ -269,7 +269,7 @@ class HTTPSocket extends AbstractDaemon
 		foreach(explode("\r\n", $data[1]) as $line)
 		{
 			// Wrapped header:
-			if(strpos($line, ' ') === 0 OR strpos($line, "\t") === 0)
+			if(isset($line[0]) && ($line[0] === ' ' OR $line[0] === "\t"))
 			{
 				$env[$last_key] .= ltrim($line, " \t");
 				
