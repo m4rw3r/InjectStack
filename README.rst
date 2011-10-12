@@ -13,12 +13,12 @@ For the default usage with a normal MOD_PHP or PHP-FPM installation:
 
 * PHP 5.3 or later
 * PCRE Extension (compiled into PHP by default)
-* Tokenizer Extension (compiled into PHP by default), used by default ShowException
+* Tokenizer Extension (compiled into PHP by default), used by default ``ShowException``
   middleware to provide syntax-highlighting
 * `PSR-0 Compliant`_ Autoloader, Inject_ClassTools_ provides one general purpose
   autoloader as do the `Symfony ClassLoader`_.
 
-If you use any of the other provided adapters and or middleware, additiona
+If you use any of the other provided adapters and or middleware, additional
 extensions may be required. For example, the Memcached-session middleware
 require Memcached_.
 
@@ -37,7 +37,7 @@ If you already have a `PSR-0 Compliant`_ autoloader, you do not have to include
 Getting Started
 ===============
 
-A quick hello world example with a few default middlewares:
+A quick hello world example with one of the default middlewares:
 
 ::
 
@@ -51,7 +51,7 @@ A quick hello world example with a few default middlewares:
   $my_endpoint = function($env)
   {
       return array(200, array('Content-Type' => 'text/plain'), 'Hello World!');
-  }
+  };
   
   // Let's wrap it in a timer:
   $stack = new \Inject\Stack\Builder(
@@ -82,13 +82,14 @@ Requirements
 * Mongrel2_
 * ZeroMQ_
 * `ZeroMQ Extension for PHP`_
-* `pcntl Extension`_, optional if you want to be able to spawn multiple worker
+* `pcntl Extension`_, optional, if you want to be able to spawn multiple worker
   processes directly from PHP.
 
 Current limitations
 -------------------
 
-* No support for ``multipart/form-data`` yet
+* No support for ``multipart/form-data`` yet so no file-transfers can be accepted,
+  ``application/x-www-form-urlencoded`` for normal forms is supported though
 
 HTTP server in PHP using sockets
 ================================
@@ -100,8 +101,8 @@ Requirements
 ------------
 
 * `pcntl Extension`_, required if you want to be able to serve more than one
-  request concurrently (provides ``fork()``).
-* `Shared Memory Extension`_ (Optional, used for monitoring hangs)
+  request concurrently (provides ``fork()`` so multiple worker processes can
+  share one socket).
 
 .. _Rack: http://rack.rubyforge.org
 .. _GitHub: https://github.com/InjectFramework/InjectStack
@@ -114,4 +115,3 @@ Requirements
 .. _ZeroMQ: http://www.zero.mq
 .. _`ZeroMQ Extension for PHP`: http://pear.zero.mq
 .. _`pcntl Extension`: http://se2.php.net/manual/en/book.pcntl.php
-.. _`Shared Memory Extension`: http://se2.php.net/manual/en/book.shmop.php
