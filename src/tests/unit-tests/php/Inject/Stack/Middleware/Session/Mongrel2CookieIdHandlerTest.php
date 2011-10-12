@@ -78,6 +78,18 @@ class Mongrel2CookieIdHandlerTest extends \PHPUnit_Framework_TestCase
 		
 		$this->assertEquals('thisvalue', $handler->fetchUserId(array('HTTP_COOKIE' => 'InjectFw=thisvalue')));
 	}
+	public function testReadCookie11()
+	{
+		$handler = new Mongrel2CookieIdHandler('newName');
+		
+		$this->assertEquals(false, $handler->fetchUserId(array('HTTP_COOKIE' => 'InjectFw=someval')));
+	}
+	public function testReadCookie12()
+	{
+		$handler = new Mongrel2CookieIdHandler('newName');
+		
+		$this->assertEquals('someval', $handler->fetchUserId(array('HTTP_COOKIE' => 'newName=someval')));
+	}
 	public function testDefaultCookieOptions()
 	{
 		$handler = new Mongrel2CookieIdHandler();
@@ -97,6 +109,41 @@ class Mongrel2CookieIdHandlerTest extends \PHPUnit_Framework_TestCase
 		$handler = new Mongrel2CookieIdHandler('FooName', time() + 300);
 		
 		$this->assertEquals(array(200, array('a' => 'header', 'Set-Cookie' => 'FooName=FoobarId; Expires='.date(DATE_RFC822, time() + 300)), 'empty_text'), $handler->storeUserId('FoobarId', array(200, array('a' => 'header'), 'empty_text')));
+	}
+	
+	public function testCookieDomain()
+	{
+		$handler = new Mongrel2CookieIdHandler('FooName', 0, null, 'example.com');
+		
+		$this->assertEquals(array(200, array('a' => 'header', 'Set-Cookie' => 'FooName=FoobarId; Domain=example.com'), 'empty_text'), $handler->storeUserId('FoobarId', array(200, array('a' => 'header'), 'empty_text')));
+	}
+	
+	public function testCookiePath()
+	{
+		$handler = new Mongrel2CookieIdHandler('FooName', 0, '/foobar');
+		
+		$this->assertEquals(array(200, array('a' => 'header', 'Set-Cookie' => 'FooName=FoobarId; Path=/foobar'), 'empty_text'), $handler->storeUserId('FoobarId', array(200, array('a' => 'header'), 'empty_text')));
+	}
+	
+	public function testCookieSecureOnly()
+	{
+		$handler = new Mongrel2CookieIdHandler('FooName', 0, null, null, true);
+		
+		$this->assertEquals(array(200, array('a' => 'header', 'Set-Cookie' => 'FooName=FoobarId; Secure'), 'empty_text'), $handler->storeUserId('FoobarId', array(200, array('a' => 'header'), 'empty_text')));
+	}
+	
+	public function testCookieHttpOnly()
+	{
+		$handler = new Mongrel2CookieIdHandler('FooName', 0, null, null, false, true);
+		
+		$this->assertEquals(array(200, array('a' => 'header', 'Set-Cookie' => 'FooName=FoobarId; HttpOnly'), 'empty_text'), $handler->storeUserId('FoobarId', array(200, array('a' => 'header'), 'empty_text')));
+	}
+	
+	public function testCookieOptions()
+	{
+		$handler = new Mongrel2CookieIdHandler('FooName', time() + 300, '/path', 'example.com', true, true);
+		
+		$this->assertEquals(array(200, array('a' => 'header', 'Set-Cookie' => 'FooName=FoobarId; Expires='.date(DATE_RFC822, time() + 300).'; Domain=example.com; Path=/path; Secure; HttpOnly'), 'empty_text'), $handler->storeUserId('FoobarId', array(200, array('a' => 'header'), 'empty_text')));
 	}
 }
 

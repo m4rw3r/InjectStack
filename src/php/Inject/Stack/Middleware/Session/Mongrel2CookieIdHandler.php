@@ -38,16 +38,16 @@ class Mongrel2CookieIdHandler implements IdHandlerInterface
 	{
 		$this->cookie_name = $cookie_name;
 		
-		empty($expires) OR $this->cookie_options['Expires'] = date(DATE_RFC822, $expires);
-		empty($domain) OR $this->cookie_options['Domain'] = $domain;
-		empty($path) OR $this->cookie_options['Path'] = $path;
-		empty($secure_only) OR $this->cookie_options[] = 'Secure';
-		empty($http_only) OR $this->cookie_options[] = 'HttpOnly';
+		empty($expires)     OR $this->cookie_options['Expires'] = date(DATE_RFC822, $expires);
+		empty($domain)      OR $this->cookie_options['Domain']  = $domain;
+		empty($path)        OR $this->cookie_options['Path']    = $path;
+		empty($secure_only) OR $this->cookie_options[]          = 'Secure';
+		empty($http_only)   OR $this->cookie_options[]          = 'HttpOnly';
 	}
 	
 	/**
 	 * Fetches the user id from the client, if there is no user id, or
-	 * if the id is invalid for the user supplying it, generate a new one.
+	 * if the id is invalid for the user supplying it, returns false.
 	 * 
 	 * @param  array(string => mixed)
 	 * @return string|false
