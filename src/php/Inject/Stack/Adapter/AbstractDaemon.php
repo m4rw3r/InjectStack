@@ -14,6 +14,8 @@ use \Inject\Stack\AdapterInterface;
 /**
  * Base class for adapters which should be able to spawn worker processes to serve requests.
  * 
+ * Requires the PHP PCNTL Extension <http://www.php.net/manual/en/book.pcntl.php>
+ * 
  * Usage:
  * <code>
  * 
@@ -90,23 +92,23 @@ abstract class AbstractDaemon implements AdapterInterface
 		while(true)
 		{
 			// Register signal handlers
-			pcntl_signal(SIGTERM, array($this, 'killChildren'), false);
-			pcntl_signal(SIGHUP,  array($this, 'killChildren'), false);
-			pcntl_signal(SIGINT,  array($this, 'killChildren'), false);
-			pcntl_signal(SIGUSR1, array($this, 'reloadChildren'), false);
+			\pcntl_signal(SIGTERM, array($this, 'killChildren'), false);
+			\pcntl_signal(SIGHUP,  array($this, 'killChildren'), false);
+			\pcntl_signal(SIGINT,  array($this, 'killChildren'), false);
+			\pcntl_signal(SIGUSR1, array($this, 'reloadChildren'), false);
 			
 			// Wait for a child exit or hang, or signal
 			declare(ticks = 1)
 			{
 				$null = null;
-				$dead_pid = pcntl_wait($null);
+				$dead_pid = \pcntl_wait($null);
 			}
 			
 			// Reset signal handlers for child
-			pcntl_signal(SIGTERM, SIG_DFL);
-			pcntl_signal(SIGHUP,  SIG_DFL);
-			pcntl_signal(SIGINT,  SIG_DFL);
-			pcntl_signal(SIGUSR1, SIG_DFL);
+			\pcntl_signal(SIGTERM, SIG_DFL);
+			\pcntl_signal(SIGHUP,  SIG_DFL);
+			\pcntl_signal(SIGINT,  SIG_DFL);
+			\pcntl_signal(SIGUSR1, SIG_DFL);
 			
 			// Remove dead child PID
 			if(($key = array_search($dead_pid, $this->child_pids)) !== false)
@@ -133,15 +135,15 @@ abstract class AbstractDaemon implements AdapterInterface
 	 */
 	public function killChildren()
 	{
-		pcntl_signal(SIGTERM, SIG_DFL);
-		pcntl_signal(SIGHUP,  SIG_DFL);
-		pcntl_signal(SIGINT,  SIG_DFL);
-		pcntl_signal(SIGUSR1, SIG_DFL);
+		\pcntl_signal(SIGTERM, SIG_DFL);
+		\pcntl_signal(SIGHUP,  SIG_DFL);
+		\pcntl_signal(SIGINT,  SIG_DFL);
+		\pcntl_signal(SIGUSR1, SIG_DFL);
 		
 		foreach($this->child_pids as $pid)
 		{
 			echo "Killing child $pid...\n";
-			posix_kill($pid, SIGTERM);
+			\posix_kill($pid, SIGTERM);
 		}
 		
 		$this->child_pids = array();
@@ -164,7 +166,7 @@ abstract class AbstractDaemon implements AdapterInterface
 	{
 		foreach($this->child_pids as $pid)
 		{
-			posix_kill($pid, SIGUSR1);
+			\posix_kill($pid, SIGUSR1);
 		}
 	}
 	
@@ -181,7 +183,7 @@ abstract class AbstractDaemon implements AdapterInterface
 	 */
 	protected function fork($app_builder, $pid_index)
 	{
-		$pid = pcntl_fork();
+		$pid = \pcntl_fork();
 		
 		if($pid == -1)
 		{
@@ -192,7 +194,7 @@ abstract class AbstractDaemon implements AdapterInterface
 		{
 			// Child:
 			// Register the graceful shutdown signal handler, and declare that we listen for it
-			pcntl_signal(SIGUSR1, array($this, 'shutdownGracefully'), false);
+			\pcntl_signal(SIGUSR1, array($this, 'shutdownGracefully'), false);
 			
 			declare(ticks = 1)
 			{
