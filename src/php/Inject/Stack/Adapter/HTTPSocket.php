@@ -146,7 +146,7 @@ class HTTPSocket extends AbstractDaemon
 		while($this->doRun)
 		{
 			// Wait for a new connection
-			$conn = stream_socket_accept($this->socket);
+			$conn = stream_socket_accept($this->socket, -1);
 			
 			try
 			{
