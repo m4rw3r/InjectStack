@@ -84,9 +84,20 @@ class Mongrel2 extends AbstractDaemon
 	/**
 	 * Buffer size in bytes for the case when streaming from a resource handle.
 	 * 
+	 * Default: 8 KiB
+	 * 
 	 * @var int
 	 */
 	protected $buffer_size = 8192;
+	
+	/**
+	 * Maximum size of the in-memory copy of the request, bytes.
+	 * 
+	 * Default: 2 MiB
+	 * 
+	 * @var int
+	 */
+	protected $maxmem = 2097152;
 	
 	/**
 	 * @param  string
@@ -120,12 +131,30 @@ class Mongrel2 extends AbstractDaemon
 	/**
 	 * Sets the buffer size for streaming from a resource handle, number of bytes.
 	 * 
-	 * @param  int
+	 * Default: 8 KiB
+	 * 
+	 * @param  int   bytes
 	 * @return void
 	 */
 	public function setBufferSize($value)
 	{
 		$this->buffer_size = $value;
+	}
+	
+	// ------------------------------------------------------------------------
+
+	/**
+	 * Sets the maximum size of the in-memory copy of the request in bytes,
+	 * if the request exceeds this, it will instead be written to a temporary file.
+	 * 
+	 * Default: 2 MiB
+	 * 
+	 * @param  int   bytes
+	 * @return void
+	 */
+	public function setMaxTempMemory($value)
+	{
+		$this->maxmem = $value;
 	}
 	
 	// ------------------------------------------------------------------------
@@ -165,7 +194,16 @@ class Mongrel2 extends AbstractDaemon
 		{
 			try
 			{
-				list($uuid, $conn_id, $path, $headers, $msg) = $this->parseRequest($this->request->recv());
+				// Open place to stash data in, we might get a lot
+				// We can't reuse this as it might switch to a file and that is
+				// strictly a one-way operation, no way to get a memory based temp again
+				$fp = fopen('php://temp/maxmemory:'.$this->maxmem, 'rw');
+				
+				// Read data from ZeroMQ and stash in temporary memory
+				fwrite($fp, $this->request->recv());
+				rewind($fp);
+				
+				list($uuid, $conn_id, $path, $headers, $bodylen) = $this->parseRequest($fp);
 				
 				if($headers['METHOD'] == 'JSON' OR $path == '@*')
 				{
@@ -175,10 +213,13 @@ class Mongrel2 extends AbstractDaemon
 				
 				$this->debug && print("Got request from $uuid: {$headers['METHOD']} {$headers['PATH']}");
 				
-				$env = $this->createEnv($path, $headers, $msg);
+				$env = $this->createEnv($path, $headers, $fp, $bodylen);
 				
 				// Call app, and if app returns != false, send to Mongrel2
 				$response = $app($env);
+				
+				// Close temp-storage
+				fclose($fp);
 				
 				if($response)
 				{
@@ -191,6 +232,9 @@ class Mongrel2 extends AbstractDaemon
 			}
 			catch(ZMQException $e)
 			{
+				// Close temp-storage
+				@fclose($fp);
+				
 				// TODO: Is this an ok way of suicide?
 				die("ZeroMQ: ".$e->getMessage()."\n");
 			}
@@ -215,7 +259,7 @@ class Mongrel2 extends AbstractDaemon
 	 * @param  string
 	 * @return array
 	 */
-	public function createEnv($path, $headers, $msg)
+	public function createEnv($path, $headers, $msg, $bodylen)
 	{
 		$env = $this->default_env;
 		
@@ -226,7 +270,6 @@ class Mongrel2 extends AbstractDaemon
 		$env['PATH_INFO']         = '/'.trim(substr($headers['PATH'], strlen($headers['PATTERN'])), '/');
 		$env['QUERY_STRING']      = empty($headers['QUERY']) ? '' : $headers['QUERY'];
 		$env['inject.url_scheme'] = 'http';  // TODO: Proper code
-		// TODO: Replace with a stream pointing to $msg
 		$env['inject.input']      = $msg;
 		
 		empty($env['QUERY_STRING']) OR parse_str($env['QUERY_STRING'], $env['inject.get']);
@@ -251,8 +294,7 @@ class Mongrel2 extends AbstractDaemon
 			if(stripos($env['CONTENT_TYPE'], 'application/x-www-form-urlencoded') === 0)
 			{
 				// Parse!
-				// TODO: Replace with stream reading as in the other adapters?
-				parse_str($env['inject.input'], $env['inject.post']);
+				parse_str(stream_get_contents($env['inject.input'], empty($env['CONTENT_LENGTH']) ? $bodylen : $env['CONTENT_LENGTH']), $env['inject.post']);
 			}
 		}
 		
@@ -264,32 +306,32 @@ class Mongrel2 extends AbstractDaemon
 	/**
 	 * Parses a mongrel request.
 	 * 
-	 * @param  string  The request string from ZeroMQ
-	 * @return array(string, int, string, array, string)
+	 * @param  stream  The request string from ZeroMQ
+	 * @return array(string, int, string, array)
 	 */
-	public function parseRequest($msg)
+	public function parseRequest($fp)
 	{
-		list($uuid, $conn_id, $path, $msg) = explode(' ', $msg, 4);
+		// Format:
+		// UUID CONN_ID PATH headlen:header,bodylen:body,
+		// TODO: Tweak the numeric values below so we won't read unnecessary data
+		$uuid    = stream_get_line($fp, 255, ' ');
+		$conn_id = stream_get_line($fp, 255, ' ');
+		$path    = stream_get_line($fp, 1024, ' ');
+		$headlen = stream_get_line($fp, 255, ':');
+		$header  = fread($fp, (int) $headlen);
 		
-		list($headlen, $msg) = explode(':', $msg, 2);
-		$header  = substr($msg, 0, (int) $headlen);
-		$msg     = substr($msg, (int) $headlen);
-		
-		if( ! $msg[0] == ',')
+		if( ! fgetc($fp) == ',')
 		{
 			return false;
 		}
 		
-		list($bodylen, $msg) = explode(':', substr($msg, 1), 2);
-		$body    = substr($msg, 0, (int) $bodylen);
-		$msg     = substr($msg, (int) $bodylen);
+		$bodylen = stream_get_line($fp, 255, ':');
+		// TODO: This is probably not needed, not sure though:
+		// Truncate down to the end of body, right before the ","
+		// 5 = num delimiters - 1
+		// ftruncate($fp, strlen($uuid) + strlen($conn_id) + strlen($path) + strlen($headlen) + strlen($header) + strlen($bodylen) + 5);
 		
-		if( ! $msg[0] == ',')
-		{
-			return false;
-		}
-		
-		return array($uuid, $conn_id, $path, json_decode($header, true), $body);
+		return array($uuid, $conn_id, $path, json_decode($header, true), $bodylen);
 	}
 	
 	// ------------------------------------------------------------------------
