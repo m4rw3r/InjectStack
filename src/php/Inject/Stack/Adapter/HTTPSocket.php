@@ -9,6 +9,7 @@ namespace Inject\Stack\Adapter;
 
 use \Exception;
 use \Inject\Stack\Util;
+use \Inject\Stack\Adapter\Exception as AdapterException;
 
 /**
  * Class which acts as a HTTP server directly in PHP.
@@ -118,10 +119,11 @@ class HTTPSocket extends AbstractDaemon
 	 */
 	protected function preFork()
 	{
-		if( ! ($this->socket = @stream_socket_server('tcp://'.$this->default_env['SERVER_NAME'].':'.$this->default_env['SERVER_PORT'], $err_no, $err_msg)))
+		$addr = 'tcp://'.$this->default_env['SERVER_NAME'].':'.$this->default_env['SERVER_PORT'];
+		
+		if( ! ($this->socket = @stream_socket_server($addr, $err_no, $err_msg)))
 		{
-			// TODO: Proper exception
-			throw new Exception("Could not create socket for tcp://{$this->default_env['SERVER_NAME']}:{$this->default_env['SERVER_PORT']}: $err_no: $err_msg");
+			throw AdapterException::socketUnavailable($addr, $err_no, $err_msg);
 		}
 	}
 	

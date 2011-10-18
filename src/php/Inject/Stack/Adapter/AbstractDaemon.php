@@ -8,8 +8,8 @@
 namespace Inject\Stack\Adapter;
 
 use \Closure;
-use \Exception;
 use \Inject\Stack\AdapterInterface;
+use \Inject\Stack\Adapter\Exception as AdapterException;
 
 /**
  * Base class for adapters which should be able to spawn worker processes to serve requests.
@@ -79,6 +79,12 @@ abstract class AbstractDaemon implements AdapterInterface
 	 */
 	public function serve(Closure $app_builder, $num_children = 5)
 	{
+		// Check for PCNTL Extension
+		if( ! extension_loaded('pcntl'))
+		{
+			throw AdapterException::pcntlMissing(__CLASS__);
+		}
+		
 		// Init shared resources for the daemon
 		$this->preFork();
 		
@@ -187,8 +193,7 @@ abstract class AbstractDaemon implements AdapterInterface
 		
 		if($pid == -1)
 		{
-			// TODO: Proper exception
-			throw new Exception('Could not fork process.');
+			throw AdapterException::couldNotFork();
 		}
 		elseif($pid === 0)
 		{
