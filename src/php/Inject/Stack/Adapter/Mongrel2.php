@@ -188,7 +188,7 @@ class Mongrel2 extends AbstractDaemon
 		$this->response->connect($this->pub_addr);
 		$this->response->setSockOpt(ZMQ::SOCKOPT_IDENTITY, $this->uuid);
 		
-		echo "Listening on {$this->pull_addr} and responding on {$this->pub_addr}...\n";
+		$this->debug && print("Listening on {$this->pull_addr} and responding on {$this->pub_addr}...\n");
 		
 		while($this->do_run)
 		{
