@@ -158,6 +158,8 @@ class Lint implements MiddlewareInterface
 		
 		$this->assert('SCRIPT_NAME cannot be "/", make it "" and PATH_INFO "/"',
 			$env['SCRIPT_NAME'] != '/');
+		
+		$this->assert('inject.input must be a stream', is_resource($env['inject.input']));
 	}
 	
 	// ------------------------------------------------------------------------
@@ -285,7 +287,7 @@ class Lint implements MiddlewareInterface
 	 */
 	public function isCodeWithNoBody($code)
 	{
-		return $code < 200 && $code >= 199 OR $code == 204 OR $code == 304;
+		return $code < 200 && $code >= 100 OR $code == 204 OR $code == 304;
 	}
 	
 	// ------------------------------------------------------------------------
