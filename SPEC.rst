@@ -244,7 +244,7 @@ These keys have special rules:
 ``HTTP_CONTENT_TYPE``:
     Must not be present, rename to ``CONTENT_TYPE``.
 
-``HTTP_CONTENT_LEGTH``:
+``HTTP_CONTENT_LENGTH``:
     Must not be present, rename to ``CONTENT_LENGTH``.
 
 The Return value
