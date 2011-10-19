@@ -95,6 +95,9 @@ returns a 404 if it cannot find it::
   
   use \Inject\Stack\MiddlewareInterface;
   
+  /**
+   * Will return a 404 if the GET key "go" does not exist.
+   */
   class BlockIfNotGo implements MiddlewareInterface
   {
       protected $next;
@@ -106,7 +109,7 @@ returns a 404 if it cannot find it::
 
       public function __invoke($env)
       {
-          if( ! isset($_GET['go']))
+          if( ! isset($env['inject.get']['go']))
           {
               return array(404, array('Content-Type' => 'text/plain'), 'Page not found');
           }
@@ -265,7 +268,9 @@ the response body.
 Example response array::
 
   array(200,
-      array('Content-Type' => 'text/html; charset=utf-8'),
+      array('Content-Type'  => 'text/html; charset=utf-8',
+            'Last-Modified' => date(\DateTime::RFC1123),
+            'Cache-Control' => 'public'),
       '<?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE html PUBLIC ...')
 
@@ -281,11 +286,10 @@ Response Headers
 Must be an array or array equivalent (``\ArrayAccess``, ``\Countable``
 and also ``\Iterator`` or ``\IteratorAggregate``).
 
-All header keys are strings, and preferably written as they are in
-the HTTP specification, ie. ``Content-Type`` instead of ``content-type``
-or ``content_type``. Their values cannot contain ``:`` or ``\n`` and must
-match ``/^[a-zA-Z][a-zA-Z0-9_-]*$/``.
-The header ``status`` is not allowed.
+All header keys are strings, and written as they are in the HTTP specification,
+ie. ``Content-Type`` instead of ``content-type`` or ``content_type``. [#]_
+Their values cannot contain ``:`` or ``\n`` and must match
+``/^[a-zA-Z][a-zA-Z0-9_-]*$/``. The header ``status`` is not allowed.
 
 All header values must either be strings or objects responding to
 ``__toString()``, and they must not contain ASCII character values
@@ -305,10 +309,20 @@ Response Body
 The response body is a string or an object responding to ``__toString()``.
 It must be empty if the ``REQUEST_METHOD`` is ``HEAD``.
 
-It can also be a resource which can be used with ``fread()``, ``feof()``
+It can also be a resource-stream which can be used with ``fread()``, ``feof()``
 and ``fclose()``. In that case adapters will read from the resource using
 ``fread()`` while ``feof()`` != ``false``, and when the stream reading has
 reached ``EOF`` the stream will be closed with ``fclose()``.
+
+If the ``Content-Length`` header does not exist and the response body is a
+string or object (and not empty), it will be created and assigned with the
+length of the resulting string. (``Transfer-Encoding`` header must be empty for this
+auto-assignment)
+
+If the ``Content-Length`` header does not exist and the response is a
+resource-stream, `Chunked-Encoding`_ will be used to transfer the data from
+the stream, making it possible to deliver content which length is not yet known.
+(``Transfer-Encoding`` header must be empty for this auto-assignment)
 
 Validating ``$env`` and the response
 ====================================
@@ -332,7 +346,12 @@ down the request processing by a large factor.
 
 .. [#] Model-View-Controller, see `Wikipedia about MVC`_
 .. [#] Hierarchical Model-View-Controller, see `Wikipedia about HMVC`_
+.. [#] This is to prevent multiple fields for the same key (HTTP specifications
+       say that header keys are case-insensitive) without lots of extra code
+       converting them to and from the ``ucfirst()`` format specified in the
+       HTTP-spec.
 .. _Rack: http://rack.rubyforge.org/
 .. _`PHP Closures`: http://php.net/manual/en/functions.anonymous.php
 .. _`Wikipedia about MVC`: http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller
 .. _`Wikipedia about HMVC`: http://en.wikipedia.org/wiki/Presentation-abstraction-control
+.. _`Chunked-Encoding`: http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.6.1
