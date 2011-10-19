@@ -7,7 +7,7 @@
 
 namespace Inject\Stack\Adapter;
 
-use \Exception;
+use \Exception as BaseException;
 use \Inject\Stack\Util;
 use \Inject\Stack\Adapter\Exception as AdapterException;
 
@@ -203,7 +203,7 @@ class HTTPSocket extends AbstractDaemon
 					// TODO: Add content message?
 				}
 			}
-			catch(Exception $e)
+			catch(BaseException $e)
 			{
 				@fclose($conn);
 				
