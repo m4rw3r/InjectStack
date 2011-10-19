@@ -60,13 +60,6 @@ abstract class AbstractDaemon implements AdapterInterface
 	 */
 	private $child_pids = array();
 	
-	/**
-	 * The index position for the PID in the shared memory for this child.
-	 * 
-	 * @var int
-	 */
-	private $pid_index = null;
-	
 	// ------------------------------------------------------------------------
 	
 	/**
@@ -91,7 +84,7 @@ abstract class AbstractDaemon implements AdapterInterface
 		// Start the specified number of children
 		for($i = 0; $i < $num_children; $i++)
 		{
-			$this->child_pids[$i] = $this->fork($app_builder, $i);
+			$this->child_pids[$i] = $this->fork($app_builder);
 		}
 		
 		// Monitor loop:
@@ -122,7 +115,7 @@ abstract class AbstractDaemon implements AdapterInterface
 				unset($this->child_pids[$key]);
 				
 				echo "Restarting child $dead_pid\n";
-				$this->child_pids[$key] = $this->fork($app_builder, $key);
+				$this->child_pids[$key] = $this->fork($app_builder);
 			}
 			else
 			{
@@ -184,10 +177,9 @@ abstract class AbstractDaemon implements AdapterInterface
 	 * 
 	 * @param  Closure  Function to be called to create the non-shared resources and finally
 	 *                  instantiate the application
-	 * @param  int      The index of the PID in shared memory
 	 * @return int      PID of the worker if we are the server, otherwise this process dies after run() returns
 	 */
-	protected function fork($app_builder, $pid_index)
+	protected function fork($app_builder)
 	{
 		$pid = \pcntl_fork();
 		
