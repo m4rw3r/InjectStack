@@ -7,6 +7,8 @@
 
 namespace Inject\Stack\Middleware;
 
+use \Inject\Stack\MiddlewareInterface;
+
 /**
  * Filters $env and strips all non-UTF-8 characters from its strings, prevents
  * injection attacks and similar by confusing the escaping functions with bad UTF-8.
