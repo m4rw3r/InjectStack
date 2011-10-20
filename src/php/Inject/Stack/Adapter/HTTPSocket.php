@@ -159,7 +159,17 @@ class HTTPSocket extends AbstractDaemon
 					// Empty
 				}
 				
-				$env = $this->parseRequestHeader($str);
+				if(strlen($str) === 4128)
+				{
+					// Request-URI Too Long
+					// TODO: Can we use the "431 Request Header Fields Too Large"
+					/// response code? or should it be 400 Bad Request instead?
+					$env = 414;
+				}
+				else
+				{
+					$env = $this->parseRequestHeader($str);
+				}
 				
 				if( ! is_numeric($env))
 				{
