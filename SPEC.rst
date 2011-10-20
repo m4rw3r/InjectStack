@@ -161,7 +161,7 @@ The Environment variable must always include these keys:
     "location". This may be an empty string, if the application
     corresponds to the "root" of the server (in the case of URL rewriting).
     
-    If it is not empty it must start with a ``/``, it may never contain
+    If it is not empty it must start with a ``/``, it must never contain
     ``/`` by itself.
 
 ``PATH_INFO``:
