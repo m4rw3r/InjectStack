@@ -99,8 +99,6 @@ class Test
 	
 	protected function runHTTP()
 	{
-		global $type;
-		
 		system('APPFILE='.escapeshellarg($this->appfile).' php '.escapeshellarg(self::$test_bootstrap).' > output.txt &');
 		
 		usleep(70000);
@@ -113,9 +111,9 @@ class Test
 			
 			if(file_exists('pidfile'))
 			{
-				while( ! posix_kill(file_get_contents('pidfile'), SIGINT))
+				while( ! posix_kill(file_get_contents('pidfile'), SIGTERM))
 				{
-					
+					// Wait
 				}
 				
 				unlink('pidfile');
@@ -142,9 +140,9 @@ class Test
 			return array(false, false);
 		}
 		
-		while( ! posix_kill(file_get_contents('pidfile'), SIGINT))
+		while( ! posix_kill(file_get_contents('pidfile'), SIGTERM))
 		{
-			
+			// Wait
 		}
 		
 		unlink('pidfile');
