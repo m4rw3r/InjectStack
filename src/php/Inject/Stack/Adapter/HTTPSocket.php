@@ -209,8 +209,8 @@ class HTTPSocket extends AbstractDaemon
 				else
 				{
 					// We have an error from parsing the request:
-					fwrite($conn, "HTTP/1.1 $env ".Util::getHttpStatusText($env)."\r\nContent-Length: 0\r\n\r\n");
-					// TODO: Add content message?
+					$status = Util::getHttpStatusText($env);
+					fwrite($conn, "HTTP/1.1 $env ".$status."\r\nContent-Type: text/plain\r\nConnection: close\r\nContent-Length: ".strlen($status)."\r\n\r\n$status");
 				}
 			}
 			catch(BaseException $e)
