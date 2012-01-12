@@ -12,10 +12,12 @@ use \Inject\Stack\Util;
 use \Inject\Stack\Adapter\Exception as AdapterException;
 
 /**
- * Test implementation of persistent HTTP connections using libevent,
- * still supports multiple processes using the same socket.
+ * Fast non-blocking implementation of persistent HTTP connections using libevent,
+ * functions in a similar way to the HTTPSocket adapter.
  * 
- * Requires the libevent extension for PHP.
+ * Supports multiple processes using the same socket.
+ * 
+ * Requires the libevent extension for PHP from <http://pecl.php.net/package/libevent>.
  */
 class HTTPSocketEventLoop extends HTTPSocket
 {
@@ -82,19 +84,23 @@ class HTTPSocketEventLoop extends HTTPSocket
 		event_base_loop($evloop);
 	}
 	
+	/**
+	 * Triggered when a new client has connected to the socket.
+	 * 
+	 * Registers a new event which is is triggered when the client socket has
+	 * data to read.
+	 * 
+	 * @param  resource  socket
+	 * @param  int       event flags
+	 * @param  resource  libevent event base
+	 */
 	public function evConnect($fdlisten, $events, $evloop)
 	{
-		if( ! ($events & EV_READ))
-		{
-			// TODO: Needed?
-			throw new BaseException(sprintf("Unknown event type in %s: 0x%hx", __METHOD__, $events));
-		}
-		
 		$fdconn = stream_socket_accept($fdlisten);
 		
 		if( ! $fdconn)
 		{
-			// TODO: What do I do here? Can happen sometimes apparently
+			// TODO: What do we do here? Can happen sometimes apparently
 			return;
 		}
 		
@@ -110,6 +116,20 @@ class HTTPSocketEventLoop extends HTTPSocket
 		$this->clients[(int) $fdconn] = $event;
 	}
 	
+	/**
+	 * Triggered when a client socket has data to read, attempts to read a HTTP header
+	 * from it and then parse it and pass it on to an Inject\Stack app.
+	 * 
+	 * If it fails it will return quickly and let the event loop process other
+	 * requests. If it fails with a closed socket (return value from strea_get_line()
+	 * is an empty string) it will call closeConnection() to close the socket and
+	 * free the event associated with the socket.
+	 * 
+	 * @param  resource  client socket
+	 * @param  int       event flags
+	 * @param  resource  libevent event
+	 * @return void
+	 */
 	public function evRead($fdconn, $events, $event)
 	{
 		$str = stream_get_line($fdconn, 4128, "\r\n\r\n");
@@ -205,8 +225,8 @@ class HTTPSocketEventLoop extends HTTPSocket
 	 * Closes the given connection file descriptor and removes and frees the given
 	 * associated event.
 	 * 
-	 * @param  resource (socket connection)
-	 * @param  resource (libevent event)
+	 * @param  resource  client socket
+	 * @param  resource  libevent event
 	 * @return void
 	 */
 	protected function closeConnection($fdconn, $event)
