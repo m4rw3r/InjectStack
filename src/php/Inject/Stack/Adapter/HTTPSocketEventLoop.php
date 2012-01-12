@@ -20,15 +20,10 @@ use \Inject\Stack\Adapter\Exception as AdapterException;
 class HTTPSocketEventLoop extends HTTPSocket
 {
 	/**
-	 * Event code for PHP exception closing the bufferevent.
+	 * List of added events, this to save them from the PHP garbage collector.
+	 * 
+	 * @var array(int => event)
 	 */
-	const EVBUFFER_PHP_EXCEPTION = 4096;
-	
-	/**
-	 * Event code for socket connection closed.
-	 */
-	const EVBUFFER_PHP_CONNECTION_CLOSE = 4096;
-	
 	protected $clients = array();
 	
 	/**
@@ -40,6 +35,11 @@ class HTTPSocketEventLoop extends HTTPSocket
 	
 	public function preFork()
 	{
+		if( ! extension_loaded('libevent'))
+		{
+			throw AdapterException::libeventMissing(__CLASS__);
+		}
+		
 		parent::preFork();
 		
 		// Seems like if no block is set (=0), errors might arise when multiple processes
@@ -57,24 +57,29 @@ class HTTPSocketEventLoop extends HTTPSocket
 			$this->preFork();
 		}
 		
+		$this->app = $app;
+		
 		$evloop = event_base_new();
 		$evsock = event_new();
+		$evsign = event_new();
 		
-		// echo "Setting up eventConnection";
 		// Register an event on socket connection
 		event_set($evsock, $this->socket, EV_READ | EV_PERSIST, array($this, 'evConnect'), $evloop);
 		event_base_set($evsock, $evloop);
 		
-		// Enable the event
+		// Graceful shutdown on SIGUSR1 as defined in AbstractDaemon, pcntl signalhandling does
+		// not seem to work properly with libevent
+		event_set($evsign, SIGUSR1, EV_SIGNAL | EV_PERSIST, array($this, 'shutdownGracefully'));
+		event_base_set($evsign, $evloop);
+		
+		// Enable the events
 		event_add($evsock);
+		event_add($evsign);
 		
-		$this->app = $app;
-		
-		// echo "Running eventLoop";
+		// Save the loop instance so we can shutdown gracefully
+		$this->evloop = $evloop;
 		
 		event_base_loop($evloop);
-		
-		//event_base_free($evloop);
 	}
 	
 	public function evConnect($fdlisten, $events, $evloop)
@@ -95,55 +100,49 @@ class HTTPSocketEventLoop extends HTTPSocket
 		
 		stream_set_blocking($fdconn, 0);
 		
-		$client = new EventLoopClient();
+		// Add event for pending reads
+		$event = event_new();
+		event_set($event, $fdconn, EV_READ | EV_PERSIST, array($this, 'evRead'), $event);
+		event_base_set($event, $evloop);
+		event_add($event);
 		
-		$this->clients[] = $client;
-		
-		// TODO: Replace evBufRead with a closure?
-		$evbuf = event_buffer_new($fdconn, array($this, 'evBufRead'), null, array($this, 'evBufError'), $client);
-		event_buffer_base_set($evbuf, $evloop);
-		// Read and write timeout
-		event_buffer_timeout_set($evbuf, 60, 60);
-		// Set lower and upper bound where the read callback will be triggered (0 = immediate)
-		event_buffer_watermark_set($evbuf, EV_READ, 1, 0xffffff);
-		event_buffer_priority_set($evbuf, 10);
-		
-		$client->fdconn = $fdconn;
-		$client->evbuf  = $evbuf;
-		
-		event_buffer_enable($evbuf, EV_READ | EV_PERSIST);
+		// Save $event from the evil garbage collector
+		$this->clients[(int) $fdconn] = $event;
 	}
 	
-	public function evBufRead($evbuf, $client)
+	public function evRead($fdconn, $events, $event)
 	{
-		// TODO: What about this number?
-		// TODO: Replace requestBuffer with an in-memory php://temp resource?
-		$client->requestbuffer .= event_buffer_read($evbuf, 4128);
-	
-		if(strlen($client->requestbuffer) > 4128)
+		$str = stream_get_line($fdconn, 4128, "\r\n\r\n");
+		
+		if($str === false)
 		{
-			$env = 414;
-		}
-		// TODO: Is this a good solution?
-		elseif(($pos = strpos($client->requestbuffer, "\r\n\r\n")) === false)
-		{
-			// We have not yet got a complete request, wait for next part
+			// Not an end to the request yet, waiting for more data
 			return;
+		}
+		elseif(empty($str))
+		{
+			// Empty string = closed connection, close it and return
+			$this->closeConnection($fdconn, $event);
+			
+			return;
+		}
+		elseif(strlen($str) === 4128)
+		{
+			// Request-URI Too Long
+			// TODO: Can we use the "431 Request Header Fields Too Large"
+			/// response code? or should it be 400 Bad Request instead?
+			$env = 414;
 		}
 		else
 		{
-			$request = substr($client->requestbuffer, 0, $pos);
-			$client->requestbuffer = substr($client->requestbuffer, $pos + 4);
-		
-			$env = $this->parseRequestHeader($request);
+			$env = $this->parseRequestHeader($str);
 		}
 		
 		if( ! is_numeric($env))
 		{
-			// TODO: What to do here? We need to have this as a stream or file-descriptor
-			$env['inject.input'] = $client->fdconn;
+			$env['inject.input'] = $fdconn;
 				
-			list($env['REMOTE_ADDR'], $env['REMOTE_PORT']) = $this->getRemote($client->fdconn);
+			list($env['REMOTE_ADDR'], $env['REMOTE_PORT']) = $this->getRemote($fdconn);
 			
 			empty($env['QUERY_STRING']) OR parse_str($env['QUERY_STRING'], $env['inject.get']);
 				
@@ -167,7 +166,7 @@ class HTTPSocketEventLoop extends HTTPSocket
 					parse_str(stream_get_contents($env['inject.input'], empty($env['CONTENT_LENGTH']) ? -1 : $env['CONTENT_LENGTH']), $env['inject.post']);
 				}
 			}
-				
+			
 			try
 			{
 				$app = $this->app;
@@ -175,22 +174,19 @@ class HTTPSocketEventLoop extends HTTPSocket
 				// Run the application!
 				if($res = $app($env))
 				{
-					// TODO: Can we write directly to the client socket, or do we *have*
-					// to use a bufferevent? So far it looks like bufferevent is not needed
-					// as we are not handling multiple requests on the same connection simultaneously
-					$this->httpResponse($client->fdconn, $res);
+					$this->httpResponse($fdconn, $res);
 				}
 				
 				// Connection: close in either request or response, terminate connection
 				if(( ! empty($env['HTTP_CONNECTION'])) && $env['HTTP_CONNECTION'] === 'close' OR
 				   ( ! empty($res[1]['Connection'])) && $res[1]['Connection'] === 'close')
 				{
-					$this->evBufError($evbuf, self::EVBUFFER_PHP_CONNECTION_CLOSE, $client);
+					$this->closeConnection($fdconn, $event);
 				}
 			}
 			catch(BaseException $e)
 			{
-				$this->evBufError($evbuf, self::EVBUFFER_PHP_EXCEPTION, $client);
+				$this->closeConnection($fdconn, $event);
 				
 				throw $e;
 			}
@@ -199,69 +195,33 @@ class HTTPSocketEventLoop extends HTTPSocket
 		{
 			$status = Util::getHttpStatusText($env);
 			
-			fwrite($client->fdconn, "HTTP/1.1 $env ".$status."\r\nContent-Type: text/plain\r\nConnection: close\r\nContent-Length: ".strlen($status)."\r\n\r\n$status");
+			fwrite($fdconn, "HTTP/1.1 $env ".$status."\r\nContent-Type: text/plain\r\nConnection: close\r\nContent-Length: ".strlen($status)."\r\n\r\n$status");
 			
-			$this->evBufError($evbuf, self::EVBUFFER_PHP_EXCEPTION, $client);
+			$this->closeConnection($fdconn, $event);
 		}
 	}
 	
-	public function evBufError($evbuf, $error, $client)
+	/**
+	 * Closes the given connection file descriptor and removes and frees the given
+	 * associated event.
+	 * 
+	 * @param  resource (socket connection)
+	 * @param  resource (libevent event)
+	 * @return void
+	 */
+	protected function closeConnection($fdconn, $event)
 	{
-		if($error & \EVBUFFER_EOF)
-		{
-			// echo "Remote host ".$id." disconnected";
-		}
-		elseif($error & \EVBUFFER_TIMEOUT)
-		{
-			// echo "Remote host ".$id." timed out");
-		}
-		elseif($error & (self::EVBUFFER_PHP_EXCEPTION | self::EVBUFFER_PHP_CONNECTION_CLOSE))
-		{
-			// TODO: Ignore?
-		}
-		else
-		{
-			// echo sprintf("A socket error occurred: 0x%hx", $error);
-		}
+		event_del($event);
+		event_free($event);
 		
-		// Freeing stuff here:
-		event_buffer_disable($client->evbuf, \EV_READ | \EV_WRITE);
-		event_buffer_free($client->evbuf);
-		
-		// TODO: fclose() needed? Won't the event_buffer auto-clean it when it is no longer referenced?
-		//fclose($client->fdconn);
-		unset($client->evbuf, $client->fdconn, $client->requestbuffer);
-		
-		unset($this->clients[array_search($client, $this->clients)]);
+		// Remove protection from garbage collection
+		unset($this->clients[(int) $fdconn]);
+		unset($fdconn);
+	}
+	
+	protected function shutdownGracefully()
+	{
+		// Exit next loop iteration
+		event_base_loopexit($this->evloop);
 	}
 }
-
-// TODO: Move to separate file, only here now as we're testing to see if it is viable to use libevent
-class EventLoopClient
-{
-	/**
-	 * The socket connection to this client.
-	 * 
-	 * @var resource (socket)
-	 */
-	public $fdconn;
-	
-	/**
-	 * Bufferevent buffer from libevent which buffers the connection to this client.
-	 * 
-	 * @var resource (bufferevent)
-	 */
-	public $evbuf;
-	
-	/**
-	 * String buffer for the received request string.
-	 * 
-	 * TODO: Maybe replace with a memory buffer per request and then free them on close?
-	 * 
-	 * @var string
-	 */
-	public $requestbuffer = '';
-}
-
-
-

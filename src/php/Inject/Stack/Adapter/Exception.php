@@ -25,6 +25,12 @@ class Exception extends BaseException
 	{
 		return new static(sprintf('Could not create socket for listening on %s, caused by %d: %s', $addr, $err_no, $err_msg));
 	}
+	
+	public static function libeventMissing($requiring_class)
+	{
+		return new static(sprintf('The libevent Extension is required by %s, source can be found at <http://pecl.php.net/package/libevent>. See <http://php.net/manual/en/book.libevent.php> for more information.', $requiring_class));
+	}
+	
 }
 
 /* End of file Exception.php */
