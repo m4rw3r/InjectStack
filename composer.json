@@ -1,10 +1,10 @@
 {
-	"name": "Inject/Stack",
+	"name": "inject/stack",
 	"type": "library",
 	"description": "A minimal base for constructing web applications/frameworks based on a layered architecture. A PHP-style port of Ruby's Rack, webserver agnostic.",
 	"keywords": ["micro", "framework", "rack", "layered", "modular", "libevent", "mongrel2", "zeromq"],
-	"homepage": "https://github.com/injectframework/InjectStack",
-	"version": "0.2",
+	"homepage": "https://github.com/InjectFramework/InjectStack",
+	"version": "0.2.0",
 	"license": "BSD-3",
 	"authors": [
 		{
